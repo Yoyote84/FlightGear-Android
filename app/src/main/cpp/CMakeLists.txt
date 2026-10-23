@@ -36,6 +36,23 @@ target_include_directories(flightgear_main_objects PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
+# Gate 4: compile a real SimGear translation unit for Android ARM64.
+# Start with the platform-independent atomic primitive; this verifies that
+# SimGear itself can enter the native build before pulling in its larger
+# subsystem graph and external dependencies.
+add_library(simgear_atomic_objects OBJECT
+    "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx"
+)
+target_include_directories(simgear_atomic_objects PRIVATE
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(simgear_atomic_objects PRIVATE
+    ANDROID=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
