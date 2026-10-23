@@ -3,7 +3,7 @@ name: Android ARM64 build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, native-flightgear-port ]
+    branches: [ main, native-flightgear-port, native-flightgear-port-simgear-core ]
 
 jobs:
   build-debug:
