@@ -125,8 +125,7 @@ target_compile_definitions(simgear_props_objects PRIVATE
 )
 
 # Gate 9: compile the remaining upstream SimGear components in one parallel
-# translation-unit pool. CMake/Ninja will schedule independent files in
-# parallel and enforce only the dependency boundaries that actually exist.
+# translation-unit pool. CMake/Ninja schedules independent files in parallel.
 set(SIMGEAR_COMPONENT_DIRS
     bucket
     bvh
@@ -183,6 +182,78 @@ target_compile_definitions(simgear_remaining_objects PRIVATE
     FG_ANDROID=1
     SIMGEAR_USE_OPENGL=1
 )
+
+# Gate 10: assemble the actual upstream SimGearCore source set as a static
+# library. Scene/graphics components remain outside this target and will be
+# linked later as SimGearScene against the FlightGear OSG fork.
+set(SIMGEAR_CORE_COMPONENT_DIRS
+    bucket
+    debug
+    embedded_resources
+    emesary
+    ephemeris
+    io
+    magvar
+    math
+    misc
+    nasal
+    nasal/cppbind
+    serial
+    std
+    threads
+    timing
+    xml
+    package
+)
+
+set(SIMGEAR_CORE_SOURCES)
+foreach(component IN LISTS SIMGEAR_CORE_COMPONENT_DIRS)
+    file(GLOB_RECURSE core_component_sources CONFIGURE_DEPENDS
+        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
+    )
+    list(APPEND SIMGEAR_CORE_SOURCES ${core_component_sources})
+endforeach()
+
+list(SORT SIMGEAR_CORE_SOURCES)
+list(LENGTH SIMGEAR_CORE_SOURCES SIMGEAR_CORE_COUNT)
+message(STATUS "SimGearCore additional native C/C++ sources: ${SIMGEAR_CORE_COUNT}")
+
+add_library(simgear_core_objects OBJECT ${SIMGEAR_CORE_SOURCES})
+target_include_directories(simgear_core_objects PRIVATE
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(simgear_core_objects PRIVATE
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+    FG_ANDROID=1
+)
+
+add_library(SimGearCore STATIC
+    $<TARGET_OBJECTS:simgear_structure_objects>
+    $<TARGET_OBJECTS:simgear_props_objects>
+    $<TARGET_OBJECTS:simgear_core_objects>
+)
+target_include_directories(SimGearCore PUBLIC
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(SimGearCore PUBLIC
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+    FG_ANDROID=1
+)
+
+target_link_libraries(SimGearCore PUBLIC android log)
 
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
