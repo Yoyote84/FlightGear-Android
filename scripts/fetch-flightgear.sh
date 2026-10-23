@@ -39,11 +39,13 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define ENABLE_AI 1
 #define FG_HAVE_GPERFTOOLS 0
 #define FLIGHTGEAR_VERSION "2024.2.0"
+#define FG_BUILD_TYPE "Debug"
+#define WEB_BROWSER ""
+#define VERSION "2024.2.0"
 #define HAVE_UNISTD_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_INTTYPES_H 1
 #define HAVE_DLFCN_H 1
-#define HAVE_PTHREAD_H 1
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_STAT_H 1
 #define HAVE_SYS_TYPES_H 1
@@ -90,9 +92,6 @@ if 'SG_ANDROID_INTEGER_SEQUENCE_COMPAT' not in s:
     p.write_text(replacement)
 PY
 
-# Keep OSG's native ref_ptr API intact on Android. The previous raw-pointer
-# conversion introduced ambiguous comparisons with existing ref_ptr operators.
-
 mkdir -p "$DEPS/openscenegraph/include/OpenThreads"
 cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
 #pragma once
@@ -127,6 +126,7 @@ cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #define OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE 1
 #define OSG_GL_FIXED_FUNCTION_AVAILABLE 0
 #define OSG_GL_CONTEXT_VERSION "3.0"
+#define OSG_USE_REF_PTR_IMPLICIT_OUTPUT_CONVERSION 1
 EOF
 
 cat > "$DEPS/openscenegraph/include/osg/Version" <<'EOF'
@@ -206,6 +206,26 @@ static inline void glEndList() {}
 #ifndef glCallList
 static inline void glCallList(unsigned int) {}
 #endif
+EOF
+
+# The Android dummy sound subsystem in upstream FlightGear has an invalid
+# override placement; normalize it before compilation.
+python3 - "$DEPS/flightgear/src/Sound/soundmanager.hxx" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+s = p.read_text()
+s = s.replace('void update(double dt) {} override', 'void update(double dt) override {}')
+p.write_text(s)
+PY
+
+# FlightGear normally generates this header from CMake. Keep it in the
+# existing third_party include path so no extra CMake include directory is
+# required.
+cat > "$DEPS/flightgearBuildId.h" <<'EOF'
+#pragma once
+#define BUILD_DATE "2026-10-23"
+#define REVISION "android"
 EOF
 
 echo "FlightGear Android native sources prepared under $DEPS"
