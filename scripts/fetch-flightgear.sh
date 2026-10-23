@@ -54,18 +54,41 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define HAVE_STRNCASECMP 1
 EOF
 
-# SimGear's compatibility aliases are only needed on older desktop C++ libraries.
-# libc++ in the Android NDK already provides these C++17 aliases.
+# Android NDK libc++ already provides the C++17 type aliases used by SimGear.
 mkdir -p "$DEPS/simgear/simgear"
+cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
+#pragma once
+#define SIMGEAR_ANDROID 1
+#define SIMGEAR_HAVE_OPENGL 1
+#define SIMGEAR_HAVE_OPENGL_ES 1
+#define HAVE_STD_REMOVE_CV_T 1
+#define HAVE_STD_REMOVE_CVREF_T 1
+#define HAVE_STD_ENABLE_IF_T 1
+#define HAVE_STD_BOOL_CONSTANT 1
+EOF
 python3 - "$DEPS/simgear/simgear/std/type_traits.hxx" <<'PY'
 from pathlib import Path
 p = Path(__import__('sys').argv[1])
 s = p.read_text()
-s = s.replace('#include <type_traits>\n', '#include <type_traits>\n#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_REMOVE_CVREF_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
+marker = '#include <type_traits>\n'
+if 'HAVE_STD_REMOVE_CV_T' not in s:
+    s = s.replace(marker, marker + '#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_REMOVE_CVREF_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
 p.write_text(s)
 PY
 
-mkdir -p "$DEPS/openscenegraph/include/osg"
+mkdir -p "$DEPS/openscenegraph/include/osg" "$DEPS/openscenegraph/include/OpenThreads"
+cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
+#pragma once
+#define OPENTHREADS_VERSION 200000
+#define OPENTHREADS_VERSION_MAJOR 2
+#define OPENTHREADS_VERSION_MINOR 0
+#define OPENTHREADS_VERSION_PATCH 0
+#define OPENTHREADS_EXPORT
+#define OPENTHREADS_EXPORTS 1
+#define OPENTHREADS_PLATFORM_ANDROID 1
+#define OPENTHREADS_USE_PTHREADS 1
+EOF
+
 cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #pragma once
 #define OSG_VERSION_MAJOR 3
@@ -111,7 +134,6 @@ cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
 #ifndef GL_APIENTRY
 #define GL_APIENTRY APIENTRY
 #endif
-/* Legacy OpenGL enums referenced by OSG's portable headers. */
 #ifndef GL_QUADS
 #define GL_QUADS 0x0007
 #endif
@@ -151,8 +173,6 @@ cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
 #ifndef GL_RGBA8_OES
 #define GL_RGBA8_OES 0x8058
 #endif
-/* Fixed-function entry points do not exist in GLES; these are compile-time
-   compatibility shims for legacy OSG branches that are disabled at runtime. */
 #ifndef glColor4f
 static inline void glColor4f(float,float,float,float) {}
 #endif
