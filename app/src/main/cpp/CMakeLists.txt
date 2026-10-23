@@ -27,9 +27,7 @@ foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
     target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
 
-# Gate 3: compile the upstream Main implementation as OBJECTs. Once this gate
-# is green, the next step is to bring the required SimGear/FGOSG objects into
-# the same native Android link instead of maintaining a compatibility clone.
+# Gate 3: compile the upstream Main implementation as OBJECTs.
 include("${CMAKE_CURRENT_LIST_DIR}/flightgear_main_sources.cmake")
 add_library(flightgear_main_objects OBJECT ${FLIGHTGEAR_MAIN_SOURCES})
 target_include_directories(flightgear_main_objects PRIVATE
@@ -37,9 +35,8 @@ target_include_directories(flightgear_main_objects PRIVATE
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
 # Gate 4: compile a real SimGear translation unit for Android ARM64.
-# Start with the platform-independent atomic primitive; this verifies that
-# SimGear itself can enter the native build before pulling in its larger
-# subsystem graph and external dependencies.
+# Keep this target separate while the dependency graph is brought over in
+# small, verifiable groups.
 add_library(simgear_atomic_objects OBJECT
     "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx"
 )
@@ -52,6 +49,21 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     SGATOMIC_USE_LIBRARY_FUNCTIONS=1
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
+
+# Gate 5: add a small, platform-independent SimGear structure group. These
+# sources are part of the real SimGear implementation and exercise shared
+# pointer/property infrastructure without enabling desktop windowing code.
+set(SIMGEAR_STRUCTURE_SOURCES
+    "${SIMGEAR_ROOT}/simgear/structure/SGReferenced.cxx"
+    "${SIMGEAR_ROOT}/simgear/structure/SGSharedPtr.cxx"
+    "${SIMGEAR_ROOT}/simgear/structure/SGSourceLocation.cxx"
+)
+add_library(simgear_structure_objects OBJECT ${SIMGEAR_STRUCTURE_SOURCES})
+target_include_directories(simgear_structure_objects PRIVATE
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1)
 
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
