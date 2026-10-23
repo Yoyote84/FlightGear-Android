@@ -3,6 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'org.flightgear.android'
     compileSdk 36
+    ndkVersion '27.2.12479018'
 
     defaultConfig {
         applicationId 'org.flightgear.android'
