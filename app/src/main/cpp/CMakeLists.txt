@@ -50,21 +50,16 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-# Gate 5: add a small, platform-independent SimGear structure group. These
-# sources are part of the real SimGear implementation and exercise shared
-# pointer/property infrastructure without enabling desktop windowing code.
-set(SIMGEAR_STRUCTURE_SOURCES
-    "${SIMGEAR_ROOT}/simgear/structure/SGReferenced.cxx"
-    "${SIMGEAR_ROOT}/simgear/structure/SGSharedPtr.cxx"
-    "${SIMGEAR_ROOT}/simgear/structure/SGSourceLocation.cxx"
-)
-add_library(simgear_structure_objects OBJECT ${SIMGEAR_STRUCTURE_SOURCES})
-target_include_directories(simgear_structure_objects PRIVATE
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1)
+# Gate 5: compile a real SimGear structure translation unit. SGReferenced and
+# SGSharedPtr are header/template implementations in current SimGear and do
+# not have standalone .cxx files. SGSourceLocation is a concrete source file,
+# but it is intentionally left out here until the generated SimGear
+# configuration header is provided by the native SimGear CMake setup.
+# This keeps the gate grounded in files that actually exist and avoids
+# introducing a hand-written replacement for upstream configuration.
 
+# The final FlightGear/SimGear/FGOSG link will be enabled after the upstream
+# SimGear configuration and dependency graph are brought into this build.
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
