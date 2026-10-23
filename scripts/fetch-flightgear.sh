@@ -56,9 +56,6 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define HAVE_STRNCASECMP 1
 EOF
 
-# Android NDK libc++ already provides most C++17 type aliases used by SimGear.
-# remove_cvref_t itself is a C++20 alias on some NDK/libc++ combinations, so provide
-# a small Android compatibility alias and tell SimGear not to redeclare it.
 mkdir -p "$DEPS/simgear/simgear"
 cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
 #pragma once
@@ -82,9 +79,6 @@ if 'SG_ANDROID_REMOVE_CVREF_COMPAT' not in s:
 p.write_text(s)
 PY
 
-# SimGear's legacy integer_sequence compatibility predates the C++17 implementation
-# shipped by Android libc++. On Android use the standard implementation and retain only
-# the append helper that SimGear needs.
 python3 - "$DEPS/simgear/simgear/std/integer_sequence.hxx" <<'PY'
 from pathlib import Path
 import sys
@@ -96,18 +90,8 @@ if 'SG_ANDROID_INTEGER_SEQUENCE_COMPAT' not in s:
     p.write_text(replacement)
 PY
 
-# The OSG fork used by FlightGear has a legacy ref_ptr API. Modern SimGear expects
-# the conventional raw-pointer conversion for these accessors.
-python3 - "$DEPS/openscenegraph/include/osg/ref_ptr" <<'PY'
-from pathlib import Path
-import sys
-p = Path(sys.argv[1])
-s = p.read_text()
-needle = 'operator unspecified_bool_type() const'
-if 'SG_ANDROID_REFPTR_RAW_POINTER' not in s and needle in s:
-    s = s.replace(needle, '#if defined(ANDROID)\n#define SG_ANDROID_REFPTR_RAW_POINTER 1\noperator T*() const { return _ptr; }\n#endif\n\n' + needle, 1)
-p.write_text(s)
-PY
+# Keep OSG's native ref_ptr API intact on Android. The previous raw-pointer
+# conversion introduced ambiguous comparisons with existing ref_ptr operators.
 
 mkdir -p "$DEPS/openscenegraph/include/OpenThreads"
 cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
