@@ -8,9 +8,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(FLIGHTGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/flightgear")
 set(SIMGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear")
 set(FGOSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/openscenegraph")
-set(BOOST_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/boost")
+set(THIRD_PARTY_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party")
+set(BOOST_ROOT "${THIRD_PARTY_ROOT}")
 
-# Boost is a header dependency of the native FlightGear/SimGear sources.
+# Boost is staged as third_party/boost, so the include root must be its parent.
 include_directories("${BOOST_ROOT}")
 
 add_library(flightgear_android SHARED
@@ -132,7 +133,7 @@ target_compile_definitions(FGOSGDB PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL
 file(GLOB_RECURSE FGOSG_OSGUTIL_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgUtil/*.cpp" "${FGOSG_ROOT}/src/osgUtil/*.cxx")
 add_library(FGOSGUtil OBJECT ${FGOSG_OSGUTIL_SOURCES})
 target_include_directories(FGOSGUtil PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-target_compile_definitions(FGOSGUtil PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
+target_compile_definitions(FGOSGUtil PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_GLES3_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 
 file(GLOB_RECURSE FGOSG_OSGGA_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgGA/*.cpp" "${FGOSG_ROOT}/src/osgGA/*.cxx")
 add_library(FGOSGGA OBJECT ${FGOSG_OSGGA_SOURCES})
