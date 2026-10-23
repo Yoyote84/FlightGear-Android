@@ -14,66 +14,27 @@ add_library(flightgear_android SHARED
     android_egl_surface.cpp
 )
 
-# Gate 1: prove that the real upstream source trees are visible to Android C++.
-add_library(flightgear_source_probe OBJECT
-    flightgear_source_probe.cpp
-)
-
+add_library(flightgear_source_probe OBJECT flightgear_source_probe.cpp)
 target_include_directories(flightgear_source_probe PRIVATE
-    "${FLIGHTGEAR_ROOT}/src"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
-)
+    "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_compile_definitions(flightgear_source_probe PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
-target_compile_definitions(flightgear_source_probe PRIVATE
-    FG_ANDROID=1
-    ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-)
-
-# Gate 2: compile real upstream FlightGear translation units. They remain
-# OBJECT targets so the Android library stays linkable while each layer
-# exposes desktop-only dependencies one at a time.
-add_library(flightgear_main_probe OBJECT
-    "${FLIGHTGEAR_ROOT}/src/Main/main.cxx"
-)
-
-add_library(flightgear_bootstrap_probe OBJECT
-    "${FLIGHTGEAR_ROOT}/src/Main/bootstrap.cxx"
-)
-
+add_library(flightgear_main_probe OBJECT "${FLIGHTGEAR_ROOT}/src/Main/main.cxx")
+add_library(flightgear_bootstrap_probe OBJECT "${FLIGHTGEAR_ROOT}/src/Main/bootstrap.cxx")
 foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
     target_include_directories(${probe} PRIVATE
-        "${FLIGHTGEAR_ROOT}/src"
-        "${SIMGEAR_ROOT}"
-        "${SIMGEAR_ROOT}/simgear"
-        "${FGOSG_ROOT}/include"
-    )
-
-    target_compile_definitions(${probe} PRIVATE
-        FG_ANDROID=1
-        ANDROID=1
-        SIMGEAR_USE_OPENGL=1
-    )
+        "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+    target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
 
-target_compile_definitions(flightgear_android PRIVATE
-    FG_ANDROID=1
-    ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-)
+# Gate 3: compile the upstream Main implementation as OBJECTs.
+include("${CMAKE_CURRENT_LIST_DIR}/flightgear_main_sources.cmake")
+add_library(flightgear_main_objects OBJECT ${FLIGHTGEAR_MAIN_SOURCES})
+target_include_directories(flightgear_main_objects PRIVATE
+    "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
+target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
-    "${FLIGHTGEAR_ROOT}/src"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
-)
-
-target_link_libraries(flightgear_android
-    android
-    log
-    EGL
-    GLESv3
-)
+    "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_link_libraries(flightgear_android android log EGL GLESv3)
