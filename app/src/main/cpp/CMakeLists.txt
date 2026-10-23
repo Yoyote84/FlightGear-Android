@@ -48,9 +48,9 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-# Gate 7: compile the complete upstream SimGear structure component as
-# independent OBJECTs. This follows SimGear's own structure/CMakeLists.txt
-# source list instead of inventing replacement implementations.
+# Gates 7-8: compile upstream SimGear components as independent OBJECTs.
+# The source lists mirror SimGear's own component CMake files; no replacement
+# implementations are introduced here.
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file(
@@ -87,6 +87,37 @@ target_include_directories(simgear_structure_objects PRIVATE
     "${SIMGEAR_ROOT}/simgear"
 )
 target_compile_definitions(simgear_structure_objects PRIVATE
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+)
+
+set(SIMGEAR_PROPS_SOURCES
+    AtomicChangeListener.cxx
+    condition.cxx
+    easing_functions.cxx
+    PropertyBasedElement.cxx
+    PropertyBasedMgr.cxx
+    PropertyInterpolationMgr.cxx
+    PropertyInterpolator.cxx
+    propertyObject.cxx
+    props.cxx
+    props_io.cxx
+)
+
+set(SIMGEAR_PROPS_ABS_SOURCES)
+foreach(source IN LISTS SIMGEAR_PROPS_SOURCES)
+    list(APPEND SIMGEAR_PROPS_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/props/${source}")
+endforeach()
+
+add_library(simgear_props_objects OBJECT ${SIMGEAR_PROPS_ABS_SOURCES})
+target_include_directories(simgear_props_objects PRIVATE
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(simgear_props_objects PRIVATE
     ANDROID=1
     HAVE_CONFIG_H=1
     SGATOMIC_USE_LIBRARY_FUNCTIONS=1
