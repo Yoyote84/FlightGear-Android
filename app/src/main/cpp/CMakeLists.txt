@@ -5,8 +5,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# Android-native build of the real FlightGear source tree.
-# The source fetch is kept separate so CI and local builds remain reproducible.
 set(FLIGHTGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/flightgear")
 set(SIMGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear")
 set(FGOSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/openscenegraph")
@@ -16,9 +14,37 @@ add_library(flightgear_android SHARED
     android_egl_surface.cpp
 )
 
+# Integration gate: compile a small object directly against the real upstream
+# FlightGear/SimGear/FG OSG source trees before enabling the full desktop CMake
+# projects, whose dependency discovery assumes X11/Qt on non-Android systems.
+add_library(flightgear_source_probe OBJECT
+    flightgear_source_probe.cpp
+)
+
+target_include_directories(flightgear_source_probe PRIVATE
+    "${FLIGHTGEAR_ROOT}/src"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${FGOSG_ROOT}/include"
+)
+
+target_compile_definitions(flightgear_source_probe PRIVATE
+    FG_ANDROID=1
+    ANDROID=1
+    SIMGEAR_USE_OPENGL=1
+)
+
 target_compile_definitions(flightgear_android PRIVATE
     FG_ANDROID=1
     ANDROID=1
+    SIMGEAR_USE_OPENGL=1
+)
+
+target_include_directories(flightgear_android PRIVATE
+    "${FLIGHTGEAR_ROOT}/src"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${FGOSG_ROOT}/include"
 )
 
 target_link_libraries(flightgear_android
@@ -26,12 +52,4 @@ target_link_libraries(flightgear_android
     log
     EGL
     GLESv3
-)
-
-# Keep the original source trees visible to the Android build as we progressively
-# enable FlightGear/SimGear/FG OSG targets and replace desktop-only platform code.
-target_include_directories(flightgear_android PRIVATE
-    "${FLIGHTGEAR_ROOT}/src"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
 )
