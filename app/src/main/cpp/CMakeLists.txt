@@ -14,9 +14,7 @@ add_library(flightgear_android SHARED
     android_egl_surface.cpp
 )
 
-# Integration gate: compile a small object directly against the real upstream
-# FlightGear/SimGear/FG OSG source trees before enabling the full desktop CMake
-# projects, whose dependency discovery assumes X11/Qt on non-Android systems.
+# Gate 1: prove that the real upstream source trees are visible to Android C++.
 add_library(flightgear_source_probe OBJECT
     flightgear_source_probe.cpp
 )
@@ -29,6 +27,26 @@ target_include_directories(flightgear_source_probe PRIVATE
 )
 
 target_compile_definitions(flightgear_source_probe PRIVATE
+    FG_ANDROID=1
+    ANDROID=1
+    SIMGEAR_USE_OPENGL=1
+)
+
+# Gate 2: compile an actual upstream FlightGear translation unit.  We keep it
+# as an OBJECT target for now so the Android app remains linkable while this
+# first real source file exposes desktop-only dependencies one at a time.
+add_library(flightgear_main_probe OBJECT
+    "${FLIGHTGEAR_ROOT}/src/Main/main.cxx"
+)
+
+target_include_directories(flightgear_main_probe PRIVATE
+    "${FLIGHTGEAR_ROOT}/src"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${FGOSG_ROOT}/include"
+)
+
+target_compile_definitions(flightgear_main_probe PRIVATE
     FG_ANDROID=1
     ANDROID=1
     SIMGEAR_USE_OPENGL=1
