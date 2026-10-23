@@ -33,8 +33,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libboost-dev
+          rm -rf third_party/boost
           mkdir -p third_party
           cp -a /usr/include/boost third_party/boost
+          test -f third_party/boost/functional/hash.hpp
+          test -f third_party/boost/call_traits.hpp
+          test -f third_party/boost/bimap.hpp
 
       - name: Prepare original FlightGear sources
         run: |
