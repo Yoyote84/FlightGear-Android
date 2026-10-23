@@ -33,32 +33,15 @@ target_include_directories(flightgear_main_objects PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
-add_library(simgear_atomic_objects OBJECT
-    "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx"
-)
-target_include_directories(simgear_atomic_objects PRIVATE
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(simgear_atomic_objects PRIVATE
-    ANDROID=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-)
+add_library(simgear_atomic_objects OBJECT "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx")
+target_include_directories(simgear_atomic_objects PRIVATE "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(simgear_atomic_objects PRIVATE ANDROID=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1)
 
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
-configure_file(
-    "${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in"
-    "${SIMGEAR_GENERATED_DIR}/simgear_config.h"
-    @ONLY
-)
+configure_file("${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in" "${SIMGEAR_GENERATED_DIR}/simgear_config.h" @ONLY)
 
-set(SIMGEAR_STRUCTURE_SOURCES
-    SGAtomic.cxx SGBinding.cxx SGExpression.cxx SGSmplhist.cxx SGSmplstat.cxx
-    SGPerfMon.cxx SGSourceLocation.cxx StringTable.cxx commands.cxx event_mgr.cxx
-    exception.cxx subsystem_mgr.cxx StateMachine.cxx
-)
+set(SIMGEAR_STRUCTURE_SOURCES SGAtomic.cxx SGBinding.cxx SGExpression.cxx SGSmplhist.cxx SGSmplstat.cxx SGPerfMon.cxx SGSourceLocation.cxx StringTable.cxx commands.cxx event_mgr.cxx exception.cxx subsystem_mgr.cxx StateMachine.cxx)
 set(SIMGEAR_STRUCTURE_ABS_SOURCES)
 foreach(source IN LISTS SIMGEAR_STRUCTURE_SOURCES)
     list(APPEND SIMGEAR_STRUCTURE_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/structure/${source}")
@@ -67,11 +50,7 @@ add_library(simgear_structure_objects OBJECT ${SIMGEAR_STRUCTURE_ABS_SOURCES})
 target_include_directories(simgear_structure_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1)
 
-set(SIMGEAR_PROPS_SOURCES
-    AtomicChangeListener.cxx condition.cxx easing_functions.cxx PropertyBasedElement.cxx
-    PropertyBasedMgr.cxx PropertyInterpolationMgr.cxx PropertyInterpolator.cxx
-    propertyObject.cxx props.cxx props_io.cxx
-)
+set(SIMGEAR_PROPS_SOURCES AtomicChangeListener.cxx condition.cxx easing_functions.cxx PropertyBasedElement.cxx PropertyBasedMgr.cxx PropertyInterpolationMgr.cxx PropertyInterpolator.cxx propertyObject.cxx props.cxx props_io.cxx)
 set(SIMGEAR_PROPS_ABS_SOURCES)
 foreach(source IN LISTS SIMGEAR_PROPS_SOURCES)
     list(APPEND SIMGEAR_PROPS_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/props/${source}")
@@ -80,17 +59,10 @@ add_library(simgear_props_objects OBJECT ${SIMGEAR_PROPS_ABS_SOURCES})
 target_include_directories(simgear_props_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(simgear_props_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1)
 
-set(SIMGEAR_COMPONENT_DIRS
-    bucket bvh canvas debug embedded_resources emesary environment ephemeris io magvar
-    math misc nasal nasal/cppbind scene screen serial sound std threads timing xml package
-)
+set(SIMGEAR_COMPONENT_DIRS bucket bvh canvas debug embedded_resources emesary environment ephemeris io magvar math misc nasal nasal/cppbind scene screen serial sound std threads timing xml package)
 set(SIMGEAR_REMAINING_SOURCES)
 foreach(component IN LISTS SIMGEAR_COMPONENT_DIRS)
-    file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS
-        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
+    file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS "${SIMGEAR_ROOT}/simgear/${component}/*.c" "${SIMGEAR_ROOT}/simgear/${component}/*.cc" "${SIMGEAR_ROOT}/simgear/${component}/*.cpp" "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_REMAINING_SOURCES ${component_sources})
 endforeach()
 list(SORT SIMGEAR_REMAINING_SOURCES)
@@ -98,49 +70,29 @@ add_library(simgear_remaining_objects OBJECT ${SIMGEAR_REMAINING_SOURCES})
 target_include_directories(simgear_remaining_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(simgear_remaining_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
-set(SIMGEAR_CORE_COMPONENT_DIRS
-    bucket debug embedded_resources emesary ephemeris io magvar math misc nasal nasal/cppbind
-    serial std threads timing xml package
-)
+set(SIMGEAR_CORE_COMPONENT_DIRS bucket debug embedded_resources emesary ephemeris io magvar math misc nasal nasal/cppbind serial std threads timing xml package)
 set(SIMGEAR_CORE_SOURCES)
 foreach(component IN LISTS SIMGEAR_CORE_COMPONENT_DIRS)
-    file(GLOB_RECURSE core_component_sources CONFIGURE_DEPENDS
-        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
+    file(GLOB_RECURSE core_component_sources CONFIGURE_DEPENDS "${SIMGEAR_ROOT}/simgear/${component}/*.c" "${SIMGEAR_ROOT}/simgear/${component}/*.cc" "${SIMGEAR_ROOT}/simgear/${component}/*.cpp" "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_CORE_SOURCES ${core_component_sources})
 endforeach()
 list(SORT SIMGEAR_CORE_SOURCES)
 add_library(simgear_core_objects OBJECT ${SIMGEAR_CORE_SOURCES})
 target_include_directories(simgear_core_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(simgear_core_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1)
-add_library(SimGearCore STATIC
-    $<TARGET_OBJECTS:simgear_structure_objects>
-    $<TARGET_OBJECTS:simgear_props_objects>
-    $<TARGET_OBJECTS:simgear_core_objects>)
+add_library(SimGearCore STATIC $<TARGET_OBJECTS:simgear_structure_objects> $<TARGET_OBJECTS:simgear_props_objects> $<TARGET_OBJECTS:simgear_core_objects>)
 target_include_directories(SimGearCore PUBLIC "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(SimGearCore PUBLIC ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1)
 target_link_libraries(SimGearCore PUBLIC android log)
 
-set(SIMGEAR_SCENE_COMPONENT_DIRS
-    bvh canvas scene/material scene/model scene/sky scene/tgdb scene/util scene/tsync scene/viewer screen
-)
+set(SIMGEAR_SCENE_COMPONENT_DIRS bvh canvas scene/material scene/model scene/sky scene/tgdb scene/util scene/tsync scene/viewer screen)
 set(SIMGEAR_SCENE_SOURCES)
 foreach(component IN LISTS SIMGEAR_SCENE_COMPONENT_DIRS)
-    file(GLOB_RECURSE scene_component_sources CONFIGURE_DEPENDS
-        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
+    file(GLOB_RECURSE scene_component_sources CONFIGURE_DEPENDS "${SIMGEAR_ROOT}/simgear/${component}/*.c" "${SIMGEAR_ROOT}/simgear/${component}/*.cc" "${SIMGEAR_ROOT}/simgear/${component}/*.cpp" "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_SCENE_SOURCES ${scene_component_sources})
 endforeach()
 foreach(component IN ITEMS canvas/ShaderVG/src canvas/elements canvas/events canvas/layout)
-    file(GLOB_RECURSE canvas_component_sources CONFIGURE_DEPENDS
-        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
+    file(GLOB_RECURSE canvas_component_sources CONFIGURE_DEPENDS "${SIMGEAR_ROOT}/simgear/${component}/*.c" "${SIMGEAR_ROOT}/simgear/${component}/*.cc" "${SIMGEAR_ROOT}/simgear/${component}/*.cpp" "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_SCENE_SOURCES ${canvas_component_sources})
 endforeach()
 list(REMOVE_DUPLICATES SIMGEAR_SCENE_SOURCES)
@@ -154,127 +106,58 @@ target_compile_definitions(SimGearScene PUBLIC ANDROID=1 HAVE_CONFIG_H=1 FG_ANDR
 target_link_libraries(SimGearScene PUBLIC SimGearCore android log)
 
 set(FGOSG_INCLUDE_DIR "${FGOSG_ROOT}/include")
-
-file(GLOB_RECURSE FGOSG_OPENTHREADS_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/OpenThreads/*.c"
-    "${FGOSG_ROOT}/src/OpenThreads/*.cc"
-    "${FGOSG_ROOT}/src/OpenThreads/*.cpp"
-    "${FGOSG_ROOT}/src/OpenThreads/*.cxx")
+file(GLOB_RECURSE FGOSG_OPENTHREADS_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/OpenThreads/*.c" "${FGOSG_ROOT}/src/OpenThreads/*.cc" "${FGOSG_ROOT}/src/OpenThreads/*.cpp" "${FGOSG_ROOT}/src/OpenThreads/*.cxx")
 add_library(FGOpenThreads OBJECT ${FGOSG_OPENTHREADS_SOURCES})
 target_include_directories(FGOpenThreads PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOpenThreads PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1)
 
-file(GLOB_RECURSE FGOSG_OSG_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/osg/*.cpp"
-    "${FGOSG_ROOT}/src/osg/*.cxx")
+file(GLOB_RECURSE FGOSG_OSG_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osg/*.cpp" "${FGOSG_ROOT}/src/osg/*.cxx")
 add_library(FGOSGCore OBJECT ${FGOSG_OSG_SOURCES})
 target_include_directories(FGOSGCore PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
-target_compile_definitions(FGOSGCore PRIVATE
-    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-    OSG_WINDOWING_SYSTEM_NONE=1)
-add_library(FGOpenSceneGraph STATIC
-    $<TARGET_OBJECTS:FGOpenThreads>
-    $<TARGET_OBJECTS:FGOSGCore>)
+target_compile_definitions(FGOSGCore PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
+add_library(FGOpenSceneGraph STATIC $<TARGET_OBJECTS:FGOpenThreads> $<TARGET_OBJECTS:FGOSGCore>)
 target_include_directories(FGOpenSceneGraph PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOpenSceneGraph PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
 target_link_libraries(FGOpenSceneGraph PUBLIC android log EGL GLESv3)
 
-# Gate 13: osgDB
-file(GLOB_RECURSE FGOSG_OSGDB_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/osgDB/*.cpp"
-    "${FGOSG_ROOT}/src/osgDB/*.cxx")
+file(GLOB_RECURSE FGOSG_OSGDB_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgDB/*.cpp" "${FGOSG_ROOT}/src/osgDB/*.cxx")
 add_library(FGOSGDB OBJECT ${FGOSG_OSGDB_SOURCES})
 target_include_directories(FGOSGDB PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-target_compile_definitions(FGOSGDB PRIVATE
-    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-    OSG_WINDOWING_SYSTEM_NONE=1)
+target_compile_definitions(FGOSGDB PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 14: osgUtil. Keep it isolated so Android portability errors remain
-# visible before we assemble the renderer stack.
-file(GLOB_RECURSE FGOSG_OSGUTIL_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/osgUtil/*.cpp"
-    "${FGOSG_ROOT}/src/osgUtil/*.cxx")
+file(GLOB_RECURSE FGOSG_OSGUTIL_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgUtil/*.cpp" "${FGOSG_ROOT}/src/osgUtil/*.cxx")
 add_library(FGOSGUtil OBJECT ${FGOSG_OSGUTIL_SOURCES})
-target_include_directories(FGOSGUtil PRIVATE
-    "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-target_compile_definitions(FGOSGUtil PRIVATE
-    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-    OSG_WINDOWING_SYSTEM_NONE=1)
+target_include_directories(FGOSGUtil PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGUtil PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 15: osgGA. Input/event adapters are compiled independently first so
-# Android portability errors stay isolated before linking the renderer stack.
-file(GLOB_RECURSE FGOSG_OSGGA_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/osgGA/*.cpp"
-    "${FGOSG_ROOT}/src/osgGA/*.cxx")
+file(GLOB_RECURSE FGOSG_OSGGA_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgGA/*.cpp" "${FGOSG_ROOT}/src/osgGA/*.cxx")
 add_library(FGOSGGA OBJECT ${FGOSG_OSGGA_SOURCES})
-target_include_directories(FGOSGGA PRIVATE
-    "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-target_compile_definitions(FGOSGGA PRIVATE
-    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-    OSG_WINDOWING_SYSTEM_NONE=1)
+target_include_directories(FGOSGGA PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGGA PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 16: osgText. Text rendering is kept isolated before we bring osgViewer
-# and the full viewer stack into the final link.
-file(GLOB_RECURSE FGOSG_OSGTEXT_SOURCES CONFIGURE_DEPENDS
-    "${FGOSG_ROOT}/src/osgText/*.cpp"
-    "${FGOSG_ROOT}/src/osgText/*.cxx")
+file(GLOB_RECURSE FGOSG_OSGTEXT_SOURCES CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/osgText/*.cpp" "${FGOSG_ROOT}/src/osgText/*.cxx")
 add_library(FGOSGText OBJECT ${FGOSG_OSGTEXT_SOURCES})
-target_include_directories(FGOSGText PRIVATE
-    "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-target_compile_definitions(FGOSGText PRIVATE
-    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-    OSG_WINDOWING_SYSTEM_NONE=1)
+target_include_directories(FGOSGText PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGText PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 17: compile the remaining OSG stack as one parallel batch. These are
-# isolated OBJECT targets so CMake/NDK can compile them concurrently and expose
-# only the real Android portability errors before final renderer linkage.
-set(FGOSG_BATCH_COMPONENTS
-    osgViewer osgAnimation osgFX osgManipulator osgParticle osgUI osgVolume
-    osgShadow osgSim osgTerrain osgWidget osgPresentation)
+set(FGOSG_BATCH_COMPONENTS osgViewer osgAnimation osgFX osgManipulator osgParticle osgUI osgVolume osgShadow osgSim osgTerrain osgWidget osgPresentation)
 foreach(component IN LISTS FGOSG_BATCH_COMPONENTS)
     string(TOUPPER "${component}" component_upper)
-    file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS
-        "${FGOSG_ROOT}/src/${component}/*.cpp"
-        "${FGOSG_ROOT}/src/${component}/*.cxx")
+    file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS "${FGOSG_ROOT}/src/${component}/*.cpp" "${FGOSG_ROOT}/src/${component}/*.cxx")
     add_library(FGOSG_${component_upper} OBJECT ${component_sources})
-    target_include_directories(FGOSG_${component_upper} PRIVATE
-        "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
-    target_compile_definitions(FGOSG_${component_upper} PRIVATE
-        ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-        OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
-        OSG_WINDOWING_SYSTEM_NONE=1)
+    target_include_directories(FGOSG_${component_upper} PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+    target_compile_definitions(FGOSG_${component_upper} PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1 OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1 OSG_WINDOWING_SYSTEM_NONE=1)
 endforeach()
 
-# Collect all compiled OSG objects into one static archive for the next
-# integration step. No application linkage is attempted until the batch passes.
-add_library(FGOpenSceneGraphFull STATIC
-    $<TARGET_OBJECTS:FGOpenThreads>
-    $<TARGET_OBJECTS:FGOSGCore>
-    $<TARGET_OBJECTS:FGOSGDB>
-    $<TARGET_OBJECTS:FGOSGUtil>
-    $<TARGET_OBJECTS:FGOSGGA>
-    $<TARGET_OBJECTS:FGOSGText>
-    $<TARGET_OBJECTS:FGOSG_OSGVIEWER>
-    $<TARGET_OBJECTS:FGOSG_OSGANIMATION>
-    $<TARGET_OBJECTS:FGOSG_OSGFX>
-    $<TARGET_OBJECTS:FGOSG_OSGMANIPULATOR>
-    $<TARGET_OBJECTS:FGOSG_OSGPARTICLE>
-    $<TARGET_OBJECTS:FGOSG_OSGUI>
-    $<TARGET_OBJECTS:FGOSG_OSGVOLUME>
-    $<TARGET_OBJECTS:FGOSG_OSGSHADOW>
-    $<TARGET_OBJECTS:FGOSG_OSGSIM>
-    $<TARGET_OBJECTS:FGOSG_OSGTERRAIN>
-    $<TARGET_OBJECTS:FGOSG_OSGWIDGET>
-    $<TARGET_OBJECTS:FGOSG_OSGPRESENTATION>)
+add_library(FGOpenSceneGraphFull STATIC $<TARGET_OBJECTS:FGOpenThreads> $<TARGET_OBJECTS:FGOSGCore> $<TARGET_OBJECTS:FGOSGDB> $<TARGET_OBJECTS:FGOSGUtil> $<TARGET_OBJECTS:FGOSGGA> $<TARGET_OBJECTS:FGOSGText> $<TARGET_OBJECTS:FGOSG_OSGVIEWER> $<TARGET_OBJECTS:FGOSG_OSGANIMATION> $<TARGET_OBJECTS:FGOSG_OSGFX> $<TARGET_OBJECTS:FGOSG_OSGMANIPULATOR> $<TARGET_OBJECTS:FGOSG_OSGPARTICLE> $<TARGET_OBJECTS:FGOSG_OSGUI> $<TARGET_OBJECTS:FGOSG_OSGVOLUME> $<TARGET_OBJECTS:FGOSG_OSGSHADOW> $<TARGET_OBJECTS:FGOSG_OSGSIM> $<TARGET_OBJECTS:FGOSG_OSGTERRAIN> $<TARGET_OBJECTS:FGOSG_OSGWIDGET> $<TARGET_OBJECTS:FGOSG_OSGPRESENTATION>)
 target_include_directories(FGOpenSceneGraphFull PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOpenSceneGraphFull PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
 target_link_libraries(FGOpenSceneGraphFull PUBLIC android log EGL GLESv3)
 
-target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
-target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
-target_link_libraries(flightgear_android android log EGL GLESv3)
+# Gate 18: first real engine integration.
+target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1 SIMGEAR_HAVE_OPENGL=1 SIMGEAR_HAVE_OPENGL_ES=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
+target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include" "${FGOSG_ROOT}/src" "${SIMGEAR_GENERATED_DIR}")
+target_sources(flightgear_android PRIVATE $<TARGET_OBJECTS:flightgear_main_objects>)
+target_link_options(flightgear_android PRIVATE "-Wl,--start-group")
+target_link_libraries(flightgear_android PRIVATE SimGearScene SimGearCore FGOpenSceneGraphFull android log EGL GLESv3)
+target_link_options(flightgear_android PRIVATE "-Wl,--end-group")
