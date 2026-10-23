@@ -1,0 +1,1 @@
+Gate 6: generate SimGear configuration in the CMake build tree and compile the upstream SGSourceLocation translation unit.
