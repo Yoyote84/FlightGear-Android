@@ -46,6 +46,14 @@ jobs:
         run: |
           chmod +x scripts/fetch-flightgear.sh
           ./scripts/fetch-flightgear.sh
+          mkdir -p third_party/simgear/simgear
+          cat > third_party/simgear/simgear/version.h <<'EOF'
+          #pragma once
+          #define SIMGEAR_VERSION 2024.2.0
+          #define SIMGEAR_VERSION_MAJOR 2024
+          #define SIMGEAR_VERSION_MINOR 2
+          #define SIMGEAR_VERSION_PATCH 0
+          EOF
           chmod +x scripts/patch-flightgear-android.sh
           ./scripts/patch-flightgear-android.sh
 
