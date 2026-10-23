@@ -27,7 +27,9 @@ foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
     target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
 
-# Gate 3: compile the upstream Main implementation as OBJECTs.
+# Gate 3: compile the upstream Main implementation as OBJECTs. Once this gate
+# is green, the next step is to bring the required SimGear/FGOSG objects into
+# the same native Android link instead of maintaining a compatibility clone.
 include("${CMAKE_CURRENT_LIST_DIR}/flightgear_main_sources.cmake")
 add_library(flightgear_main_objects OBJECT ${FLIGHTGEAR_MAIN_SOURCES})
 target_include_directories(flightgear_main_objects PRIVATE
