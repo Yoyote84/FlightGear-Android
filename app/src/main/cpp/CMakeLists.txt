@@ -27,14 +27,12 @@ foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
     target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
 
-# Gate 3: compile the upstream Main implementation as OBJECTs.
 include("${CMAKE_CURRENT_LIST_DIR}/flightgear_main_sources.cmake")
 add_library(flightgear_main_objects OBJECT ${FLIGHTGEAR_MAIN_SOURCES})
 target_include_directories(flightgear_main_objects PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
-# Gate 4: compile a real SimGear translation unit for Android ARM64.
 add_library(simgear_atomic_objects OBJECT
     "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx"
 )
@@ -48,9 +46,6 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-# Gates 7-8: compile upstream SimGear components as independent OBJECTs.
-# The source lists mirror SimGear's own component CMake files; no replacement
-# implementations are introduced here.
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file(
@@ -60,284 +55,142 @@ configure_file(
 )
 
 set(SIMGEAR_STRUCTURE_SOURCES
-    SGAtomic.cxx
-    SGBinding.cxx
-    SGExpression.cxx
-    SGSmplhist.cxx
-    SGSmplstat.cxx
-    SGPerfMon.cxx
-    SGSourceLocation.cxx
-    StringTable.cxx
-    commands.cxx
-    event_mgr.cxx
-    exception.cxx
-    subsystem_mgr.cxx
-    StateMachine.cxx
+    SGAtomic.cxx SGBinding.cxx SGExpression.cxx SGSmplhist.cxx SGSmplstat.cxx
+    SGPerfMon.cxx SGSourceLocation.cxx StringTable.cxx commands.cxx event_mgr.cxx
+    exception.cxx subsystem_mgr.cxx StateMachine.cxx
 )
-
 set(SIMGEAR_STRUCTURE_ABS_SOURCES)
 foreach(source IN LISTS SIMGEAR_STRUCTURE_SOURCES)
     list(APPEND SIMGEAR_STRUCTURE_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/structure/${source}")
 endforeach()
-
 add_library(simgear_structure_objects OBJECT ${SIMGEAR_STRUCTURE_ABS_SOURCES})
-target_include_directories(simgear_structure_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(simgear_structure_objects PRIVATE
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-)
+target_include_directories(simgear_structure_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1)
 
 set(SIMGEAR_PROPS_SOURCES
-    AtomicChangeListener.cxx
-    condition.cxx
-    easing_functions.cxx
-    PropertyBasedElement.cxx
-    PropertyBasedMgr.cxx
-    PropertyInterpolationMgr.cxx
-    PropertyInterpolator.cxx
-    propertyObject.cxx
-    props.cxx
-    props_io.cxx
+    AtomicChangeListener.cxx condition.cxx easing_functions.cxx PropertyBasedElement.cxx
+    PropertyBasedMgr.cxx PropertyInterpolationMgr.cxx PropertyInterpolator.cxx
+    propertyObject.cxx props.cxx props_io.cxx
 )
-
 set(SIMGEAR_PROPS_ABS_SOURCES)
 foreach(source IN LISTS SIMGEAR_PROPS_SOURCES)
     list(APPEND SIMGEAR_PROPS_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/props/${source}")
 endforeach()
-
 add_library(simgear_props_objects OBJECT ${SIMGEAR_PROPS_ABS_SOURCES})
-target_include_directories(simgear_props_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(simgear_props_objects PRIVATE
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-)
+target_include_directories(simgear_props_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(simgear_props_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1)
 
-# Gate 9: compile the remaining upstream SimGear components in one parallel
-# translation-unit pool. CMake/Ninja schedules independent files in parallel.
 set(SIMGEAR_COMPONENT_DIRS
-    bucket
-    bvh
-    canvas
-    debug
-    embedded_resources
-    emesary
-    environment
-    ephemeris
-    io
-    magvar
-    math
-    misc
-    nasal
-    nasal/cppbind
-    scene
-    screen
-    serial
-    sound
-    std
-    threads
-    timing
-    xml
-    package
+    bucket bvh canvas debug embedded_resources emesary environment ephemeris io magvar
+    math misc nasal nasal/cppbind scene screen serial sound std threads timing xml package
 )
-
 set(SIMGEAR_REMAINING_SOURCES)
 foreach(component IN LISTS SIMGEAR_COMPONENT_DIRS)
     file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS
         "${SIMGEAR_ROOT}/simgear/${component}/*.c"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
-    )
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_REMAINING_SOURCES ${component_sources})
 endforeach()
-
 list(SORT SIMGEAR_REMAINING_SOURCES)
-list(LENGTH SIMGEAR_REMAINING_SOURCES SIMGEAR_REMAINING_COUNT)
-message(STATUS "SimGear remaining native C/C++ sources: ${SIMGEAR_REMAINING_COUNT}")
-
 add_library(simgear_remaining_objects OBJECT ${SIMGEAR_REMAINING_SOURCES})
-target_include_directories(simgear_remaining_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
-)
-target_compile_definitions(simgear_remaining_objects PRIVATE
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-    FG_ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-)
+target_include_directories(simgear_remaining_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_compile_definitions(simgear_remaining_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
-# Gate 10: assemble the actual upstream SimGearCore source set as a static
-# library. Scene/graphics components remain outside this target and will be
-# linked later as SimGearScene against the FlightGear OSG fork.
 set(SIMGEAR_CORE_COMPONENT_DIRS
-    bucket
-    debug
-    embedded_resources
-    emesary
-    ephemeris
-    io
-    magvar
-    math
-    misc
-    nasal
-    nasal/cppbind
-    serial
-    std
-    threads
-    timing
-    xml
-    package
+    bucket debug embedded_resources emesary ephemeris io magvar math misc nasal nasal/cppbind
+    serial std threads timing xml package
 )
-
 set(SIMGEAR_CORE_SOURCES)
 foreach(component IN LISTS SIMGEAR_CORE_COMPONENT_DIRS)
     file(GLOB_RECURSE core_component_sources CONFIGURE_DEPENDS
         "${SIMGEAR_ROOT}/simgear/${component}/*.c"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
-    )
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_CORE_SOURCES ${core_component_sources})
 endforeach()
-
 list(SORT SIMGEAR_CORE_SOURCES)
-list(LENGTH SIMGEAR_CORE_SOURCES SIMGEAR_CORE_COUNT)
-message(STATUS "SimGearCore additional native C/C++ sources: ${SIMGEAR_CORE_COUNT}")
-
 add_library(simgear_core_objects OBJECT ${SIMGEAR_CORE_SOURCES})
-target_include_directories(simgear_core_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(simgear_core_objects PRIVATE
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-    FG_ANDROID=1
-)
-
+target_include_directories(simgear_core_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(simgear_core_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1)
 add_library(SimGearCore STATIC
     $<TARGET_OBJECTS:simgear_structure_objects>
     $<TARGET_OBJECTS:simgear_props_objects>
-    $<TARGET_OBJECTS:simgear_core_objects>
-)
-target_include_directories(SimGearCore PUBLIC
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-)
-target_compile_definitions(SimGearCore PUBLIC
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-    FG_ANDROID=1
-)
-
+    $<TARGET_OBJECTS:simgear_core_objects>)
+target_include_directories(SimGearCore PUBLIC "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(SimGearCore PUBLIC ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1)
 target_link_libraries(SimGearCore PUBLIC android log)
 
-# Gate 11: assemble the upstream SimGearScene source tree. SimGear's own
-# scene target is populated by the scene, bvh, canvas and screen components;
-# canvas itself adds its ShaderVG/elements/events/layout subdirectories.
-# We mirror those component boundaries here while keeping compilation
-# independent from the final OSG link step.
 set(SIMGEAR_SCENE_COMPONENT_DIRS
-    bvh
-    canvas
-    scene/material
-    scene/model
-    scene/sky
-    scene/tgdb
-    scene/util
-    scene/tsync
-    scene/viewer
-    screen
+    bvh canvas scene/material scene/model scene/sky scene/tgdb scene/util scene/tsync scene/viewer screen
 )
-
 set(SIMGEAR_SCENE_SOURCES)
 foreach(component IN LISTS SIMGEAR_SCENE_COMPONENT_DIRS)
     file(GLOB_RECURSE scene_component_sources CONFIGURE_DEPENDS
         "${SIMGEAR_ROOT}/simgear/${component}/*.c"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
-    )
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_SCENE_SOURCES ${scene_component_sources})
 endforeach()
-
-# canvas/CMakeLists.txt explicitly adds these nested components.
 foreach(component IN ITEMS canvas/ShaderVG/src canvas/elements canvas/events canvas/layout)
     file(GLOB_RECURSE canvas_component_sources CONFIGURE_DEPENDS
         "${SIMGEAR_ROOT}/simgear/${component}/*.c"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
         "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
-        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
-    )
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx")
     list(APPEND SIMGEAR_SCENE_SOURCES ${canvas_component_sources})
 endforeach()
-
 list(REMOVE_DUPLICATES SIMGEAR_SCENE_SOURCES)
 list(SORT SIMGEAR_SCENE_SOURCES)
-list(LENGTH SIMGEAR_SCENE_SOURCES SIMGEAR_SCENE_COUNT)
-message(STATUS "SimGearScene native C/C++ sources: ${SIMGEAR_SCENE_COUNT}")
-
 add_library(simgear_scene_objects OBJECT ${SIMGEAR_SCENE_SOURCES})
-target_include_directories(simgear_scene_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
-)
-target_compile_definitions(simgear_scene_objects PRIVATE
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
-    GCC_ATOMIC_BUILTINS_FOUND=1
-    FG_ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-    SIMGEAR_HAVE_OPENGL=1
-    SIMGEAR_HAVE_OPENGL_ES=1
-)
-
-add_library(SimGearScene STATIC
-    $<TARGET_OBJECTS:simgear_scene_objects>
-)
-target_include_directories(SimGearScene PUBLIC
-    "${SIMGEAR_GENERATED_DIR}"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
-)
-target_compile_definitions(SimGearScene PUBLIC
-    ANDROID=1
-    HAVE_CONFIG_H=1
-    FG_ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-    SIMGEAR_HAVE_OPENGL=1
-    SIMGEAR_HAVE_OPENGL_ES=1
-)
+target_include_directories(simgear_scene_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_compile_definitions(simgear_scene_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1 SGATOMIC_USE_LIBRARY_FUNCTIONS=1 GCC_ATOMIC_BUILTINS_FOUND=1 FG_ANDROID=1 SIMGEAR_USE_OPENGL=1 SIMGEAR_HAVE_OPENGL=1 SIMGEAR_HAVE_OPENGL_ES=1)
+add_library(SimGearScene STATIC $<TARGET_OBJECTS:simgear_scene_objects>)
+target_include_directories(SimGearScene PUBLIC "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_compile_definitions(SimGearScene PUBLIC ANDROID=1 HAVE_CONFIG_H=1 FG_ANDROID=1 SIMGEAR_USE_OPENGL=1 SIMGEAR_HAVE_OPENGL=1 SIMGEAR_HAVE_OPENGL_ES=1)
 target_link_libraries(SimGearScene PUBLIC SimGearCore android log)
 
+# Gate 12: begin the real upstream OpenSceneGraph port. Android uses the
+# upstream OSG windowing mode "None"; the Android EGL surface remains owned
+# by our native bridge. Start with OpenThreads and osg, the foundational OSG
+# libraries required by the higher SimGearScene layers.
+set(FGOSG_INCLUDE_DIR "${FGOSG_ROOT}/include")
+
+file(GLOB_RECURSE FGOSG_OPENTHREADS_SOURCES CONFIGURE_DEPENDS
+    "${FGOSG_ROOT}/src/OpenThreads/*.c"
+    "${FGOSG_ROOT}/src/OpenThreads/*.cc"
+    "${FGOSG_ROOT}/src/OpenThreads/*.cpp"
+    "${FGOSG_ROOT}/src/OpenThreads/*.cxx")
+add_library(FGOpenThreads OBJECT ${FGOSG_OPENTHREADS_SOURCES})
+target_include_directories(FGOpenThreads PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
+target_compile_definitions(FGOpenThreads PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1)
+
+file(GLOB_RECURSE FGOSG_OSG_SOURCES CONFIGURE_DEPENDS
+    "${FGOSG_ROOT}/src/osg/*.cpp"
+    "${FGOSG_ROOT}/src/osg/*.cxx")
+add_library(FGOSGCore OBJECT ${FGOSG_OSG_SOURCES})
+target_include_directories(FGOSGCore PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
+target_compile_definitions(FGOSGCore PRIVATE
+    ANDROID=1
+    OSG_LIBRARY_STATIC=1
+    OSG_GL1_AVAILABLE=0
+    OSG_GL2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1
+    OSG_GLES1_AVAILABLE=1
+    OSG_GLES2_AVAILABLE=1
+    OSG_WINDOWING_SYSTEM_NONE=1
+)
+
+add_library(FGOpenSceneGraph STATIC
+    $<TARGET_OBJECTS:FGOpenThreads>
+    $<TARGET_OBJECTS:FGOSGCore>)
+target_include_directories(FGOpenSceneGraph PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
+target_compile_definitions(FGOpenSceneGraph PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
+target_link_libraries(FGOpenSceneGraph PUBLIC android log EGL GLESv3)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
-target_include_directories(flightgear_android PRIVATE
-    "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
+target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_link_libraries(flightgear_android android log EGL GLESv3)
