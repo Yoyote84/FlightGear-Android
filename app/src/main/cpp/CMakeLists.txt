@@ -32,25 +32,31 @@ target_compile_definitions(flightgear_source_probe PRIVATE
     SIMGEAR_USE_OPENGL=1
 )
 
-# Gate 2: compile an actual upstream FlightGear translation unit.  We keep it
-# as an OBJECT target for now so the Android app remains linkable while this
-# first real source file exposes desktop-only dependencies one at a time.
+# Gate 2: compile real upstream FlightGear translation units. They remain
+# OBJECT targets so the Android library stays linkable while each layer
+# exposes desktop-only dependencies one at a time.
 add_library(flightgear_main_probe OBJECT
     "${FLIGHTGEAR_ROOT}/src/Main/main.cxx"
 )
 
-target_include_directories(flightgear_main_probe PRIVATE
-    "${FLIGHTGEAR_ROOT}/src"
-    "${SIMGEAR_ROOT}"
-    "${SIMGEAR_ROOT}/simgear"
-    "${FGOSG_ROOT}/include"
+add_library(flightgear_bootstrap_probe OBJECT
+    "${FLIGHTGEAR_ROOT}/src/Main/bootstrap.cxx"
 )
 
-target_compile_definitions(flightgear_main_probe PRIVATE
-    FG_ANDROID=1
-    ANDROID=1
-    SIMGEAR_USE_OPENGL=1
-)
+foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
+    target_include_directories(${probe} PRIVATE
+        "${FLIGHTGEAR_ROOT}/src"
+        "${SIMGEAR_ROOT}"
+        "${SIMGEAR_ROOT}/simgear"
+        "${FGOSG_ROOT}/include"
+    )
+
+    target_compile_definitions(${probe} PRIVATE
+        FG_ANDROID=1
+        ANDROID=1
+        SIMGEAR_USE_OPENGL=1
+    )
+endforeach()
 
 target_compile_definitions(flightgear_android PRIVATE
     FG_ANDROID=1
