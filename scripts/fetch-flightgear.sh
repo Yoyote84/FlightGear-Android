@@ -57,6 +57,8 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 EOF
 
 # Android NDK libc++ already provides most C++17 type aliases used by SimGear.
+# remove_cvref_t itself is a C++20 alias on some NDK/libc++ combinations, so provide
+# a small Android compatibility alias and tell SimGear not to redeclare it.
 mkdir -p "$DEPS/simgear/simgear"
 cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
 #pragma once
@@ -64,14 +66,15 @@ cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
 #define SIMGEAR_HAVE_OPENGL 1
 #define SIMGEAR_HAVE_OPENGL_ES 1
 #define HAVE_STD_REMOVE_CV_T 1
+#define HAVE_STD_REMOVE_CVREF_T 1
 #define HAVE_STD_ENABLE_IF_T 1
 #define HAVE_STD_BOOL_CONSTANT 1
-/* libc++ in the Android NDK is C++17 here; provide remove_cvref_t below. */
 EOF
 
 python3 - "$DEPS/simgear/simgear/std/type_traits.hxx" <<'PY'
 from pathlib import Path
-p = Path(__import__('sys').argv[1])
+import sys
+p = Path(sys.argv[1])
 s = p.read_text()
 marker = '#include <type_traits>\n'
 if 'SG_ANDROID_REMOVE_CVREF_COMPAT' not in s:
