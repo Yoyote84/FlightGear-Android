@@ -37,6 +37,8 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define ENABLE_DBUS 0
 #define ENABLE_METAR 0
 #define ENABLE_AI 1
+#define FG_HAVE_GPERFTOOLS 0
+#define FLIGHTGEAR_VERSION "2024.2.0"
 #define HAVE_UNISTD_H 1
 #define HAVE_STDINT_H 1
 #define HAVE_INTTYPES_H 1
@@ -54,7 +56,7 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define HAVE_STRNCASECMP 1
 EOF
 
-# Android NDK libc++ already provides the C++17 type aliases used by SimGear.
+# Android NDK libc++ already provides most C++17 type aliases used by SimGear.
 mkdir -p "$DEPS/simgear/simgear"
 cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
 #pragma once
@@ -62,21 +64,49 @@ cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
 #define SIMGEAR_HAVE_OPENGL 1
 #define SIMGEAR_HAVE_OPENGL_ES 1
 #define HAVE_STD_REMOVE_CV_T 1
-#define HAVE_STD_REMOVE_CVREF_T 1
 #define HAVE_STD_ENABLE_IF_T 1
 #define HAVE_STD_BOOL_CONSTANT 1
+/* libc++ in the Android NDK is C++17 here; provide remove_cvref_t below. */
 EOF
+
 python3 - "$DEPS/simgear/simgear/std/type_traits.hxx" <<'PY'
 from pathlib import Path
 p = Path(__import__('sys').argv[1])
 s = p.read_text()
 marker = '#include <type_traits>\n'
-if 'HAVE_STD_REMOVE_CV_T' not in s:
-    s = s.replace(marker, marker + '#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_REMOVE_CVREF_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
+if 'SG_ANDROID_REMOVE_CVREF_COMPAT' not in s:
+    s = s.replace(marker, marker + '''\n#if defined(ANDROID) && !defined(SG_ANDROID_REMOVE_CVREF_COMPAT)\n#define SG_ANDROID_REMOVE_CVREF_COMPAT 1\nnamespace std {\ntemplate<class T> using remove_cvref_t = remove_cv_t<remove_reference_t<T>>;\n}\n#endif\n''')
 p.write_text(s)
 PY
 
-mkdir -p "$DEPS/openscenegraph/include/osg" "$DEPS/openscenegraph/include/OpenThreads"
+# SimGear's legacy integer_sequence compatibility predates the C++17 implementation
+# shipped by Android libc++. On Android use the standard implementation and retain only
+# the append helper that SimGear needs.
+python3 - "$DEPS/simgear/simgear/std/integer_sequence.hxx" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+s = p.read_text()
+if 'SG_ANDROID_INTEGER_SEQUENCE_COMPAT' not in s:
+    original = s
+    replacement = '''#pragma once\n\n#if defined(ANDROID)\n#define SG_ANDROID_INTEGER_SEQUENCE_COMPAT 1\n#include <utility>\nnamespace std {\ntemplate<class T, class Seq, T Int> struct append;\ntemplate<class T, T... Ints, T Int>\nstruct append<T, integer_sequence<T, Ints...>, Int> {\n    using type = integer_sequence<T, Ints..., Int>;\n};\n}\n#else\n''' + original + '''\n#endif\n'''
+    p.write_text(replacement)
+PY
+
+# The OSG fork used by FlightGear has a legacy ref_ptr API. Modern SimGear expects
+# the conventional raw-pointer conversion for these accessors.
+python3 - "$DEPS/openscenegraph/include/osg/ref_ptr" <<'PY'
+from pathlib import Path
+import sys
+p = Path(sys.argv[1])
+s = p.read_text()
+needle = 'operator unspecified_bool_type() const'
+if 'SG_ANDROID_REFPTR_RAW_POINTER' not in s and needle in s:
+    s = s.replace(needle, '#if defined(ANDROID)\n#define SG_ANDROID_REFPTR_RAW_POINTER 1\noperator T*() const { return _ptr; }\n#endif\n\n' + needle, 1)
+p.write_text(s)
+PY
+
+mkdir -p "$DEPS/openscenegraph/include/OpenThreads"
 cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
 #pragma once
 #define OPENTHREADS_VERSION 200000
@@ -89,6 +119,7 @@ cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
 #define OPENTHREADS_USE_PTHREADS 1
 EOF
 
+mkdir -p "$DEPS/openscenegraph/include/osg"
 cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #pragma once
 #define OSG_VERSION_MAJOR 3
