@@ -8,6 +8,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(FLIGHTGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/flightgear")
 set(SIMGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear")
 set(FGOSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/openscenegraph")
+set(BOOST_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/boost")
+
+# Boost is a header dependency of the native FlightGear/SimGear sources.
+include_directories("${BOOST_ROOT}")
 
 add_library(flightgear_android SHARED
     native_bridge.cpp
@@ -156,7 +160,7 @@ target_link_libraries(FGOpenSceneGraphFull PUBLIC android log EGL GLESv3)
 
 # Gate 18: first real engine integration.
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1 SIMGEAR_HAVE_OPENGL=1 SIMGEAR_HAVE_OPENGL_ES=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
-target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include" "${FGOSG_ROOT}/src" "${SIMGEAR_GENERATED_DIR}")
+target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include" "${FGOSG_ROOT}/src" "${SIMGEAR_GENERATED_DIR}" "${BOOST_ROOT}")
 target_sources(flightgear_android PRIVATE $<TARGET_OBJECTS:flightgear_main_objects>)
 target_link_options(flightgear_android PRIVATE "-Wl,--start-group")
 target_link_libraries(flightgear_android PRIVATE SimGearScene SimGearCore FGOpenSceneGraphFull android log EGL GLESv3)
