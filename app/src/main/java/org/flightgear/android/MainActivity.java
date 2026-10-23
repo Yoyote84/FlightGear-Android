@@ -2,25 +2,47 @@ package org.flightgear.android;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TextView;
 
-public class MainActivity extends Activity {
-    static { System.loadLibrary("flightgear_android"); }
+public class MainActivity extends Activity implements SurfaceHolder.Callback {
+    static {
+        System.loadLibrary("flightgear_android");
+    }
 
-    private native void nativeInit();
+    private SurfaceView surfaceView;
 
-    @Override public void onCreate(Bundle state) {
-        super.onCreate(state);
+    private static native void nativeSurfaceCreated(Surface surface);
+    private static native void nativeSurfaceChanged(Surface surface, int width, int height);
+    private static native void nativeSurfaceDestroyed();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        TextView view = new TextView(this);
-        view.setText("FlightGear Android\nNative ARM64 engine bootstrap");
-        view.setTextSize(20);
-        view.setPadding(40, 40, 40, 40);
-        setContentView(view);
-        nativeInit();
+
+        surfaceView = new SurfaceView(this);
+        surfaceView.getHolder().addCallback(this);
+        setContentView(surfaceView);
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        nativeSurfaceCreated(holder.getSurface());
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        nativeSurfaceChanged(holder.getSurface(), width, height);
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        nativeSurfaceDestroyed();
     }
 }
