@@ -22,6 +22,19 @@ clone_or_update "https://github.com/FlightGear/simgear.git" "simgear" "next"
 clone_or_update "https://github.com/FlightGear/flightgear.git" "flightgear" "next"
 clone_or_update "https://gitlab.com/flightgear/openscenegraph.git" "openscenegraph" "next"
 
+# Boost is used as a header dependency by the native FlightGear/SimGear sources.
+# Only headers are needed at this stage, so do not build Boost libraries.
+BOOST_VERSION="1.89.0"
+BOOST_DIR="$DEPS/boost"
+if [ ! -d "$BOOST_DIR/boost" ]; then
+  tmp="$DEPS/boost_${BOOST_VERSION}.tar.gz"
+  curl -L --fail --retry 3 "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" -o "$tmp"
+  tar -xzf "$tmp" -C "$DEPS"
+  rm -rf "$BOOST_DIR"
+  mv "$DEPS/boost_${BOOST_VERSION//./_}" "$BOOST_DIR"
+  rm -f "$tmp"
+fi
+
 # The normal desktop build generates these headers from CMake/autoconf.
 # The Android build deliberately has no desktop configure pass, so provide
 # the small platform configuration headers required by the upstream sources.
@@ -58,7 +71,24 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define HAVE_STRNCASECMP 1
 EOF
 
-mkdir -p "$DEPS/openscenegraph/include/osg"
+mkdir -p "$DEPS/simgear/simgear"
+cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
+#pragma once
+#define SIMGEAR_VERSION_MAJOR 2026
+#define SIMGEAR_VERSION_MINOR 0
+#define SIMGEAR_VERSION_PATCH 0
+#define SIMGEAR_HAVE_OPENGL 1
+#define SIMGEAR_HAVE_OPENGL_ES 1
+#define SG_HAVE_DDS 0
+#define SG_FFMPEG 0
+#define SG_SOUND_USES_OPENALSOFT 0
+#define HAVE_WORKING_STD_REGEX 1
+#define GCC_ATOMIC_BUILTINS_FOUND 1
+#define SIMGEAR_OSG_USE_FG_FORK 1
+#define SIMGEAR_OSG_CORRECT_VERSION 1
+EOF
+
+mkdir -p "$DEPS/openscenegraph/include/osg" "$DEPS/openscenegraph/include/OpenThreads"
 cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #pragma once
 #define OSG_VERSION_MAJOR 3
@@ -79,6 +109,18 @@ cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #define OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE 1
 #define OSG_GL_FIXED_FUNCTION_AVAILABLE 0
 #define OSG_GL_CONTEXT_VERSION "3.0"
+EOF
+
+cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
+#pragma once
+#define OPENTHREADS_VERSION_MAJOR 3
+#define OPENTHREADS_VERSION_MINOR 3
+#define OPENTHREADS_VERSION_PATCH 0
+#define OPENTHREADS_EXPORT
+#define OPENTHREADS_EXPORTS 1
+#define OPENTHREADS_BUILD_STATIC_LIBS 1
+#define OPENTHREADS_USE_PTHREADS 1
+#define OPENTHREADS_PLATFORM_ANDROID 1
 EOF
 
 cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
