@@ -255,6 +255,88 @@ target_compile_definitions(SimGearCore PUBLIC
 
 target_link_libraries(SimGearCore PUBLIC android log)
 
+# Gate 11: assemble the upstream SimGearScene source tree. SimGear's own
+# scene target is populated by the scene, bvh, canvas and screen components;
+# canvas itself adds its ShaderVG/elements/events/layout subdirectories.
+# We mirror those component boundaries here while keeping compilation
+# independent from the final OSG link step.
+set(SIMGEAR_SCENE_COMPONENT_DIRS
+    bvh
+    canvas
+    scene/material
+    scene/model
+    scene/sky
+    scene/tgdb
+    scene/util
+    scene/tsync
+    scene/viewer
+    screen
+)
+
+set(SIMGEAR_SCENE_SOURCES)
+foreach(component IN LISTS SIMGEAR_SCENE_COMPONENT_DIRS)
+    file(GLOB_RECURSE scene_component_sources CONFIGURE_DEPENDS
+        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
+    )
+    list(APPEND SIMGEAR_SCENE_SOURCES ${scene_component_sources})
+endforeach()
+
+# canvas/CMakeLists.txt explicitly adds these nested components.
+foreach(component IN ITEMS canvas/ShaderVG/src canvas/elements canvas/events canvas/layout)
+    file(GLOB_RECURSE canvas_component_sources CONFIGURE_DEPENDS
+        "${SIMGEAR_ROOT}/simgear/${component}/*.c"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cc"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cpp"
+        "${SIMGEAR_ROOT}/simgear/${component}/*.cxx"
+    )
+    list(APPEND SIMGEAR_SCENE_SOURCES ${canvas_component_sources})
+endforeach()
+
+list(REMOVE_DUPLICATES SIMGEAR_SCENE_SOURCES)
+list(SORT SIMGEAR_SCENE_SOURCES)
+list(LENGTH SIMGEAR_SCENE_SOURCES SIMGEAR_SCENE_COUNT)
+message(STATUS "SimGearScene native C/C++ sources: ${SIMGEAR_SCENE_COUNT}")
+
+add_library(simgear_scene_objects OBJECT ${SIMGEAR_SCENE_SOURCES})
+target_include_directories(simgear_scene_objects PRIVATE
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${FGOSG_ROOT}/include"
+)
+target_compile_definitions(simgear_scene_objects PRIVATE
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+    FG_ANDROID=1
+    SIMGEAR_USE_OPENGL=1
+    SIMGEAR_HAVE_OPENGL=1
+    SIMGEAR_HAVE_OPENGL_ES=1
+)
+
+add_library(SimGearScene STATIC
+    $<TARGET_OBJECTS:simgear_scene_objects>
+)
+target_include_directories(SimGearScene PUBLIC
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${FGOSG_ROOT}/include"
+)
+target_compile_definitions(SimGearScene PUBLIC
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    FG_ANDROID=1
+    SIMGEAR_USE_OPENGL=1
+    SIMGEAR_HAVE_OPENGL=1
+    SIMGEAR_HAVE_OPENGL_ES=1
+)
+target_link_libraries(SimGearScene PUBLIC SimGearCore android log)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
