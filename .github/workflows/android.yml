@@ -36,10 +36,11 @@ jobs:
           rm -rf third_party/boost
           mkdir -p third_party
           cp -a /usr/include/boost third_party/boost
+          cp /usr/include/cjson/cJSON.h third_party/cJSON.h
           test -f third_party/boost/functional/hash.hpp
           test -f third_party/boost/call_traits.hpp
           test -f third_party/boost/bimap.hpp
-          test -f /usr/include/cjson/cJSON.h
+          test -f third_party/cJSON.h
 
       - name: Prepare original FlightGear sources
         run: |
