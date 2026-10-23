@@ -191,6 +191,28 @@ target_include_directories(FGOpenSceneGraph PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGO
 target_compile_definitions(FGOpenSceneGraph PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
 target_link_libraries(FGOpenSceneGraph PUBLIC android log EGL GLESv3)
 
+# Gate 13: compile the upstream OSG database layer. osgDB is needed for
+# FlightGear's model, terrain and resource loading path. Keep it as a
+# standalone OBJECT target for this first Android portability gate.
+file(GLOB_RECURSE FGOSG_OSGDB_SOURCES CONFIGURE_DEPENDS
+    "${FGOSG_ROOT}/src/osgDB/*.cpp"
+    "${FGOSG_ROOT}/src/osgDB/*.cxx")
+add_library(FGOSGDB OBJECT ${FGOSG_OSGDB_SOURCES})
+target_include_directories(FGOSGDB PRIVATE
+    "${FGOSG_INCLUDE_DIR}"
+    "${FGOSG_ROOT}/src"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGDB PRIVATE
+    ANDROID=1
+    OSG_LIBRARY_STATIC=1
+    OSG_GL1_AVAILABLE=0
+    OSG_GL2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1
+    OSG_GLES1_AVAILABLE=1
+    OSG_GLES2_AVAILABLE=1
+    OSG_WINDOWING_SYSTEM_NONE=1)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_link_libraries(flightgear_android android log EGL GLESv3)
