@@ -1,5 +1,4 @@
-#include <jni.h>
-#include <android/native_window_jni.h>
+#include <android/native_window.h>
 #include <android/log.h>
 #include <EGL/egl.h>
 
@@ -46,7 +45,8 @@ static bool createEglSurface(ANativeWindow* window) {
 
     if (!eglMakeCurrent(g_display, g_surface, g_surface, g_context)) return false;
 
-    LOGI("Android EGL initialized: %dx%d, GLES 2 context", ANativeWindow_getWidth(window), ANativeWindow_getHeight(window));
+    LOGI("Android EGL initialized: %dx%d, GLES 2 context",
+         ANativeWindow_getWidth(window), ANativeWindow_getHeight(window));
     return true;
 }
 
@@ -62,28 +62,35 @@ static void destroyEgl() {
     g_context = EGL_NO_CONTEXT;
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_flightgear_android_MainActivity_nativeSurfaceCreated(JNIEnv* env, jclass, jobject surface) {
+extern "C" void fg_android_surface_created(ANativeWindow* window) {
     destroyEgl();
     if (g_window) {
         ANativeWindow_release(g_window);
         g_window = nullptr;
     }
-    g_window = ANativeWindow_fromSurface(env, surface);
-    if (!createEglSurface(g_window)) LOGE("Failed to create Android EGL surface");
-}
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_flightgear_android_MainActivity_nativeSurfaceChanged(JNIEnv*, jclass, jobject, jint width, jint height) {
-    LOGI("Surface changed: %dx%d", width, height);
-    if (g_display != EGL_NO_DISPLAY && g_surface != EGL_NO_SURFACE) {
-        eglQuerySurface(g_display, g_surface, EGL_WIDTH, &width);
-        eglQuerySurface(g_display, g_surface, EGL_HEIGHT, &height);
+    if (window) {
+        ANativeWindow_acquire(window);
+        g_window = window;
+    }
+
+    if (!createEglSurface(g_window)) {
+        LOGE("Failed to create Android EGL surface");
     }
 }
 
-extern "C" JNIEXPORT void JNICALL
-Java_org_flightgear_android_MainActivity_nativeSurfaceDestroyed(JNIEnv*, jclass) {
+extern "C" void fg_android_surface_changed(int width, int height) {
+    LOGI("Surface changed: %dx%d", width, height);
+    if (g_display != EGL_NO_DISPLAY && g_surface != EGL_NO_SURFACE) {
+        EGLint surfaceWidth = 0;
+        EGLint surfaceHeight = 0;
+        eglQuerySurface(g_display, g_surface, EGL_WIDTH, &surfaceWidth);
+        eglQuerySurface(g_display, g_surface, EGL_HEIGHT, &surfaceHeight);
+        LOGI("EGL surface size: %dx%d", surfaceWidth, surfaceHeight);
+    }
+}
+
+extern "C" void fg_android_surface_destroyed() {
     destroyEgl();
     if (g_window) {
         ANativeWindow_release(g_window);
