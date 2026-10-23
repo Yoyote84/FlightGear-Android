@@ -230,6 +230,51 @@ target_compile_definitions(FGOSGText PRIVATE
     OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
+# Gate 17: compile the remaining OSG stack as one parallel batch. These are
+# isolated OBJECT targets so CMake/NDK can compile them concurrently and expose
+# only the real Android portability errors before final renderer linkage.
+set(FGOSG_BATCH_COMPONENTS
+    osgViewer osgAnimation osgFX osgManipulator osgParticle osgUI osgVolume
+    osgShadow osgSim osgTerrain osgWidget osgPresentation)
+foreach(component IN LISTS FGOSG_BATCH_COMPONENTS)
+    string(TOUPPER "${component}" component_upper)
+    file(GLOB_RECURSE component_sources CONFIGURE_DEPENDS
+        "${FGOSG_ROOT}/src/${component}/*.cpp"
+        "${FGOSG_ROOT}/src/${component}/*.cxx")
+    add_library(FGOSG_${component_upper} OBJECT ${component_sources})
+    target_include_directories(FGOSG_${component_upper} PRIVATE
+        "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+    target_compile_definitions(FGOSG_${component_upper} PRIVATE
+        ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
+        OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+        OSG_WINDOWING_SYSTEM_NONE=1)
+endforeach()
+
+# Collect all compiled OSG objects into one static archive for the next
+# integration step. No application linkage is attempted until the batch passes.
+add_library(FGOpenSceneGraphFull STATIC
+    $<TARGET_OBJECTS:FGOpenThreads>
+    $<TARGET_OBJECTS:FGOSGCore>
+    $<TARGET_OBJECTS:FGOSGDB>
+    $<TARGET_OBJECTS:FGOSGUtil>
+    $<TARGET_OBJECTS:FGOSGGA>
+    $<TARGET_OBJECTS:FGOSGText>
+    $<TARGET_OBJECTS:FGOSG_OSGVIEWER>
+    $<TARGET_OBJECTS:FGOSG_OSGANIMATION>
+    $<TARGET_OBJECTS:FGOSG_OSGFX>
+    $<TARGET_OBJECTS:FGOSG_OSGMANIPULATOR>
+    $<TARGET_OBJECTS:FGOSG_OSGPARTICLE>
+    $<TARGET_OBJECTS:FGOSG_OSGUI>
+    $<TARGET_OBJECTS:FGOSG_OSGVOLUME>
+    $<TARGET_OBJECTS:FGOSG_OSGSHADOW>
+    $<TARGET_OBJECTS:FGOSG_OSGSIM>
+    $<TARGET_OBJECTS:FGOSG_OSGTERRAIN>
+    $<TARGET_OBJECTS:FGOSG_OSGWIDGET>
+    $<TARGET_OBJECTS:FGOSG_OSGPRESENTATION>)
+target_include_directories(FGOpenSceneGraphFull PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
+target_compile_definitions(FGOpenSceneGraphFull PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
+target_link_libraries(FGOpenSceneGraphFull PUBLIC android log EGL GLESv3)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_link_libraries(flightgear_android android log EGL GLESv3)
