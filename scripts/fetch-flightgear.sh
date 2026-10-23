@@ -17,27 +17,10 @@ clone_or_update() {
   fi
 }
 
-# FlightGear's actively maintained mirrors.
 clone_or_update "https://github.com/FlightGear/simgear.git" "simgear" "next"
 clone_or_update "https://github.com/FlightGear/flightgear.git" "flightgear" "next"
 clone_or_update "https://gitlab.com/flightgear/openscenegraph.git" "openscenegraph" "next"
 
-# Boost is used as a header dependency by the native FlightGear/SimGear sources.
-# Only headers are needed at this stage, so do not build Boost libraries.
-BOOST_VERSION="1.89.0"
-BOOST_DIR="$DEPS/boost"
-if [ ! -d "$BOOST_DIR/boost" ]; then
-  tmp="$DEPS/boost_${BOOST_VERSION}.tar.gz"
-  curl -L --fail --retry 3 "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION//./_}.tar.gz" -o "$tmp"
-  tar -xzf "$tmp" -C "$DEPS"
-  rm -rf "$BOOST_DIR"
-  mv "$DEPS/boost_${BOOST_VERSION//./_}" "$BOOST_DIR"
-  rm -f "$tmp"
-fi
-
-# The normal desktop build generates these headers from CMake/autoconf.
-# The Android build deliberately has no desktop configure pass, so provide
-# the small platform configuration headers required by the upstream sources.
 cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #pragma once
 #define HAVE_CONFIG_H 1
@@ -71,24 +54,18 @@ cat > "$DEPS/flightgear/src/config.h" <<'EOF'
 #define HAVE_STRNCASECMP 1
 EOF
 
+# SimGear's compatibility aliases are only needed on older desktop C++ libraries.
+# libc++ in the Android NDK already provides these C++17 aliases.
 mkdir -p "$DEPS/simgear/simgear"
-cat > "$DEPS/simgear/simgear/simgear_config.h" <<'EOF'
-#pragma once
-#define SIMGEAR_VERSION_MAJOR 2026
-#define SIMGEAR_VERSION_MINOR 0
-#define SIMGEAR_VERSION_PATCH 0
-#define SIMGEAR_HAVE_OPENGL 1
-#define SIMGEAR_HAVE_OPENGL_ES 1
-#define SG_HAVE_DDS 0
-#define SG_FFMPEG 0
-#define SG_SOUND_USES_OPENALSOFT 0
-#define HAVE_WORKING_STD_REGEX 1
-#define GCC_ATOMIC_BUILTINS_FOUND 1
-#define SIMGEAR_OSG_USE_FG_FORK 1
-#define SIMGEAR_OSG_CORRECT_VERSION 1
-EOF
+python3 - "$DEPS/simgear/simgear/std/type_traits.hxx" <<'PY'
+from pathlib import Path
+p = Path(__import__('sys').argv[1])
+s = p.read_text()
+s = s.replace('#include <type_traits>\n', '#include <type_traits>\n#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_REMOVE_CVREF_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
+p.write_text(s)
+PY
 
-mkdir -p "$DEPS/openscenegraph/include/osg" "$DEPS/openscenegraph/include/OpenThreads"
+mkdir -p "$DEPS/openscenegraph/include/osg"
 cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #pragma once
 #define OSG_VERSION_MAJOR 3
@@ -111,16 +88,12 @@ cat > "$DEPS/openscenegraph/include/osg/Config" <<'EOF'
 #define OSG_GL_CONTEXT_VERSION "3.0"
 EOF
 
-cat > "$DEPS/openscenegraph/include/OpenThreads/Config" <<'EOF'
+cat > "$DEPS/openscenegraph/include/osg/Version" <<'EOF'
 #pragma once
-#define OPENTHREADS_VERSION_MAJOR 3
-#define OPENTHREADS_VERSION_MINOR 3
-#define OPENTHREADS_VERSION_PATCH 0
-#define OPENTHREADS_EXPORT
-#define OPENTHREADS_EXPORTS 1
-#define OPENTHREADS_BUILD_STATIC_LIBS 1
-#define OPENTHREADS_USE_PTHREADS 1
-#define OPENTHREADS_PLATFORM_ANDROID 1
+#define OSG_VERSION_MAJOR 3
+#define OSG_VERSION_MINOR 7
+#define OSG_VERSION_PATCH 0
+#define OSG_VERSION "3.7.0"
 EOF
 
 cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
@@ -137,6 +110,28 @@ cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
 #endif
 #ifndef GL_APIENTRY
 #define GL_APIENTRY APIENTRY
+#endif
+/* Legacy OpenGL enums referenced by OSG's portable headers. */
+#ifndef GL_QUADS
+#define GL_QUADS 0x0007
+#endif
+#ifndef GL_QUAD_STRIP
+#define GL_QUAD_STRIP 0x0008
+#endif
+#ifndef GL_POLYGON
+#define GL_POLYGON 0x0009
+#endif
+#ifndef GL_COMPILE
+#define GL_COMPILE 0x1300
+#endif
+#ifndef GL_DECAL
+#define GL_DECAL 0x2101
+#endif
+#ifndef GL_MODULATE
+#define GL_MODULATE 0x2100
+#endif
+#ifndef GL_ADD
+#define GL_ADD 0x0104
 #endif
 #ifndef GL_DOUBLE
 #define GL_DOUBLE 0x140A
@@ -155,6 +150,23 @@ cat > "$DEPS/openscenegraph/include/osg/GL" <<'EOF'
 #endif
 #ifndef GL_RGBA8_OES
 #define GL_RGBA8_OES 0x8058
+#endif
+/* Fixed-function entry points do not exist in GLES; these are compile-time
+   compatibility shims for legacy OSG branches that are disabled at runtime. */
+#ifndef glColor4f
+static inline void glColor4f(float,float,float,float) {}
+#endif
+#ifndef glNormal3f
+static inline void glNormal3f(float,float,float) {}
+#endif
+#ifndef glNewList
+static inline void glNewList(unsigned int,unsigned int) {}
+#endif
+#ifndef glEndList
+static inline void glEndList() {}
+#endif
+#ifndef glCallList
+static inline void glCallList(unsigned int) {}
 #endif
 EOF
 
