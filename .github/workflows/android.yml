@@ -3,7 +3,7 @@ name: Android ARM64 build
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, native-flightgear-port ]
 
 jobs:
   build-debug:
@@ -25,6 +25,11 @@ jobs:
         run: |
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+
+      - name: Prepare original FlightGear sources
+        run: |
+          chmod +x scripts/fetch-flightgear.sh
+          ./scripts/fetch-flightgear.sh
 
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
