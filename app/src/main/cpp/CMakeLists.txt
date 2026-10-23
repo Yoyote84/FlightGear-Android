@@ -35,8 +35,6 @@ target_include_directories(flightgear_main_objects PRIVATE
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
 # Gate 4: compile a real SimGear translation unit for Android ARM64.
-# Keep this target separate while the dependency graph is brought over in
-# small, verifiable groups.
 add_library(simgear_atomic_objects OBJECT
     "${SIMGEAR_ROOT}/simgear/structure/SGAtomic.cxx"
 )
@@ -50,16 +48,30 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-# Gate 5: compile a real SimGear structure translation unit. SGReferenced and
-# SGSharedPtr are header/template implementations in current SimGear and do
-# not have standalone .cxx files. SGSourceLocation is a concrete source file,
-# but it is intentionally left out here until the generated SimGear
-# configuration header is provided by the native SimGear CMake setup.
-# This keeps the gate grounded in files that actually exist and avoids
-# introducing a hand-written replacement for upstream configuration.
+# Gate 6: generate the configuration header expected by concrete SimGear
+# translation units. It lives in the build tree rather than being presented
+# as an upstream source replacement.
+set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
+file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in"
+    "${SIMGEAR_GENERATED_DIR}/simgear_config.h"
+    @ONLY
+)
 
-# The final FlightGear/SimGear/FGOSG link will be enabled after the upstream
-# SimGear configuration and dependency graph are brought into this build.
+add_library(simgear_source_location_objects OBJECT
+    "${SIMGEAR_ROOT}/simgear/structure/SGSourceLocation.cxx"
+)
+target_include_directories(simgear_source_location_objects PRIVATE
+    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+)
+target_compile_definitions(simgear_source_location_objects PRIVATE
+    ANDROID=1
+    HAVE_CONFIG_H=1
+)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
