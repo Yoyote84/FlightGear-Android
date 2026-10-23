@@ -46,6 +46,8 @@ jobs:
         run: |
           chmod +x scripts/fetch-flightgear.sh
           ./scripts/fetch-flightgear.sh
+          chmod +x scripts/patch-flightgear-android.sh
+          ./scripts/patch-flightgear-android.sh
 
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
