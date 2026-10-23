@@ -32,13 +32,14 @@ jobs:
       - name: Install native build headers
         run: |
           sudo apt-get update
-          sudo apt-get install -y libboost-dev
+          sudo apt-get install -y libboost-dev libcjson-dev
           rm -rf third_party/boost
           mkdir -p third_party
           cp -a /usr/include/boost third_party/boost
           test -f third_party/boost/functional/hash.hpp
           test -f third_party/boost/call_traits.hpp
           test -f third_party/boost/bimap.hpp
+          test -f /usr/include/cjson/cJSON.h
 
       - name: Prepare original FlightGear sources
         run: |
