@@ -217,6 +217,19 @@ target_compile_definitions(FGOSGGA PRIVATE
     OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
+# Gate 16: osgText. Text rendering is kept isolated before we bring osgViewer
+# and the full viewer stack into the final link.
+file(GLOB_RECURSE FGOSG_OSGTEXT_SOURCES CONFIGURE_DEPENDS
+    "${FGOSG_ROOT}/src/osgText/*.cpp"
+    "${FGOSG_ROOT}/src/osgText/*.cxx")
+add_library(FGOSGText OBJECT ${FGOSG_OSGTEXT_SOURCES})
+target_include_directories(FGOSGText PRIVATE
+    "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGText PRIVATE
+    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_WINDOWING_SYSTEM_NONE=1)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_link_libraries(flightgear_android android log EGL GLESv3)
