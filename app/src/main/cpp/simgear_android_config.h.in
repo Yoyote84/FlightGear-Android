@@ -1,0 +1,10 @@
+/*
+ * Android-native configuration template for the first SimGear build gate.
+ * This file is generated into the native build tree; it is not a replacement
+ * for SimGear's public headers or feature detection.
+ */
+#pragma once
+
+#define SIMGEAR_ANDROID 1
+#define SIMGEAR_HAVE_OPENGL 1
+#define SIMGEAR_HAVE_OPENGL_ES 1
