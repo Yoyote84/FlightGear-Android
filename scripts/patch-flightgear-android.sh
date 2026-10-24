@@ -97,4 +97,4 @@ PY
 # Also expose the generated FlightGear Include directory to the native target.
 python3 "$ROOT/scripts/patch-flightgear-cmake.py"
 
-echo "FlightGear Android compatibility patches applied"
+echo "FlightGear Android compatibility patches applied (OSG_EXPORT fixed)"
