@@ -11,9 +11,9 @@ if replacement not in s:
     s = s.replace(needle, replacement, 1)
 
 filters = {
-    'list(SORT SIMGEAR_REMAINING_SOURCES)\n': 'list(SORT SIMGEAR_REMAINING_SOURCES)\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\n',
-    'list(SORT SIMGEAR_CORE_SOURCES)\n': 'list(SORT SIMGEAR_CORE_SOURCES)\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\n',
-    'list(SORT SIMGEAR_SCENE_SOURCES)\n': 'list(SORT SIMGEAR_SCENE_SOURCES)\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\n',
+    'list(SORT SIMGEAR_REMAINING_SOURCES)\n': 'list(SORT SIMGEAR_REMAINING_SOURCES)\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/DNSClient\\.cxx$")\n',
+    'list(SORT SIMGEAR_CORE_SOURCES)\n': 'list(SORT SIMGEAR_CORE_SOURCES)\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/DNSClient\\.cxx$")\n',
+    'list(SORT SIMGEAR_SCENE_SOURCES)\n': 'list(SORT SIMGEAR_SCENE_SOURCES)\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/DNSClient\\.cxx$")\n',
 }
 for needle, replacement in filters.items():
     if replacement not in s:
