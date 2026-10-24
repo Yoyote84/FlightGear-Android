@@ -81,9 +81,16 @@ from pathlib import Path
 import sys
 p = Path(sys.argv[1])
 s = p.read_text()
-line = '#define OSG_USE_REF_PTR_IMPLICIT_OUTPUT_CONVERSION 1'
-if line not in s:
-    s += "\n" + line + "\n"
+lines = [
+    '#define OSG_USE_REF_PTR_IMPLICIT_OUTPUT_CONVERSION 1',
+    '#ifndef OSG_EXPORT',
+    '#define OSG_EXPORT',
+    '#endif',
+]
+for line in lines:
+    if line not in s:
+        s += "\n" + line
+s += "\n"
 p.write_text(s)
 PY
 
