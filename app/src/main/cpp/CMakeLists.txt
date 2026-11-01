@@ -72,9 +72,21 @@ set(SIMGEAR_GENERATED_PARENT "${CMAKE_CURRENT_BINARY_DIR}")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in" "${SIMGEAR_GENERATED_DIR}/simgear_config.h" @ONLY)
 
-# FlightGear/SimGear use Boost headers. CI installs the host header package;
-# absolute include is valid for this header-only dependency during ARM64 cross-compilation.
-set(BOOST_INCLUDE_DIR "/usr/include")
+# Stage the host's header-only Boost tree under a non-system include root.
+# CMake omits /usr/include from cross-compiler command lines as an implicit
+# system path, but the Android NDK sysroot does not contain the host Boost tree.
+set(BOOST_SOURCE_DIR "/usr/include/boost")
+set(BOOST_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost_include")
+if(NOT IS_DIRECTORY "${BOOST_SOURCE_DIR}")
+    message(FATAL_ERROR "Boost headers not found at ${BOOST_SOURCE_DIR}; install libboost-dev before configuring.")
+endif()
+file(MAKE_DIRECTORY "${BOOST_INCLUDE_DIR}")
+if(NOT EXISTS "${BOOST_INCLUDE_DIR}/boost")
+    file(CREATE_LINK "${BOOST_SOURCE_DIR}" "${BOOST_INCLUDE_DIR}/boost" SYMBOLIC)
+endif()
+if(NOT EXISTS "${BOOST_INCLUDE_DIR}/boost/call_traits.hpp")
+    message(FATAL_ERROR "Boost header staging failed: ${BOOST_INCLUDE_DIR}/boost/call_traits.hpp is missing.")
+endif()
 
 add_library(flightgear_android SHARED
     native_bridge.cpp
