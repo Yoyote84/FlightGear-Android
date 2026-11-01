@@ -60,8 +60,8 @@ jobs:
           from pathlib import Path
           p = Path('app/src/main/cpp/CMakeLists.txt')
           s = p.read_text()
-          needle = '"${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include"'
-          replacement = '"${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${SIMGEAR_ROOT}/simgear/canvas/ShaderVG/include" "${FGOSG_ROOT}/include"'
+          needle = 'target_include_directories(simgear_scene_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")'
+          replacement = 'target_include_directories(simgear_scene_objects PRIVATE "${SIMGEAR_GENERATED_DIR}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${SIMGEAR_ROOT}/simgear/canvas/ShaderVG/include" "${FGOSG_ROOT}/include")'
           if replacement not in s:
               if needle not in s:
                   raise SystemExit('expected SimGear scene include path not found')
