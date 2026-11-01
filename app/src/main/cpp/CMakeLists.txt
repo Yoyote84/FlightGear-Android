@@ -47,8 +47,11 @@ if(NOT FLIGHTGEAR_REVISION)
     set(FLIGHTGEAR_REVISION "unknown")
 endif()
 string(TIMESTAMP FLIGHTGEAR_BUILD_DATE "%Y-%m-%d %H:%M:%S UTC" UTC)
-file(WRITE "${FLIGHTGEAR_GENERATED_DIR}/flightgearBuildId.h"
-    "#pragma once\n#define BUILD_DATE \"${FLIGHTGEAR_BUILD_DATE}\"\n#define REVISION \"${FLIGHTGEAR_REVISION}\"\n")
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/flightgearBuildId.h.in"
+    "${FLIGHTGEAR_GENERATED_DIR}/flightgearBuildId.h"
+    @ONLY
+)
 
 # Reproduce the public generated headers from the upstream OSG build.
 set(OSG_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/osg_generated")
