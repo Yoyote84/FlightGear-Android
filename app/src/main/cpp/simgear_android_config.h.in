@@ -8,3 +8,10 @@
 #define SIMGEAR_ANDROID 1
 #define SIMGEAR_HAVE_OPENGL 1
 #define SIMGEAR_HAVE_OPENGL_ES 1
+
+/* Android NDK libc++ provides these C++14/C++17 standard type aliases.
+ * Mark them as available so SimGear does not redeclare them in namespace std.
+ */
+#define HAVE_STD_REMOVE_CV_T 1
+#define HAVE_STD_ENABLE_IF_T 1
+#define HAVE_STD_BOOL_CONSTANT 1
