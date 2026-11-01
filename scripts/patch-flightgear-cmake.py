@@ -10,11 +10,19 @@ if replacement not in s:
         raise SystemExit("expected CMake include path not found")
     s = s.replace(needle, replacement, 1)
 
-filters = {
-    'list(SORT SIMGEAR_REMAINING_SOURCES)\n': 'list(SORT SIMGEAR_REMAINING_SOURCES)\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/(DNSClient(_cares)?|text_DNS)\\.cxx$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/(HTTPClient|HTTPFileRequest|HTTPRepository|http_repo_sync|httpget)\\.cxx$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/package/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/scene/tsync/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_REMAINING_SOURCES EXCLUDE REGEX "/CanvasImage\\.cxx$")\n',
-    'list(SORT SIMGEAR_CORE_SOURCES)\n': 'list(SORT SIMGEAR_CORE_SOURCES)\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/(DNSClient(_cares)?|text_DNS)\\.cxx$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/(HTTPClient|HTTPFileRequest|HTTPRepository|http_repo_sync|httpget)\\.cxx$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/package/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/scene/tsync/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_CORE_SOURCES EXCLUDE REGEX "/CanvasImage\\.cxx$")\n',
-    'list(SORT SIMGEAR_SCENE_SOURCES)\n': 'list(SORT SIMGEAR_SCENE_SOURCES)\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/(test[^/]*|[^/]*test)\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/(DNSClient(_cares)?|text_DNS)\\.cxx$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/(HTTPClient|HTTPFileRequest|HTTPRepository|http_repo_sync|httpget)\\.cxx$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/package/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/scene/tsync/.*\\.(c|cc|cpp|cxx)$")\nlist(FILTER SIMGEAR_SCENE_SOURCES EXCLUDE REGEX "/CanvasImage\\.cxx$")\n',
-}
+test_filter = 'list(FILTER {var} EXCLUDE REGEX "/([^/]*[Tt][Ee][Ss][Tt][^/]*)\\.(c|cc|cpp|cxx)$")'
+filters = {}
+for var in ("SIMGEAR_REMAINING_SOURCES", "SIMGEAR_CORE_SOURCES", "SIMGEAR_SCENE_SOURCES"):
+    filters[f"list(SORT {var})\n"] = (
+        f"list(SORT {var})\n"
+        + test_filter.format(var=var) + "\n"
+        + f'list(FILTER {var} EXCLUDE REGEX "/(DNSClient(_cares)?|text_DNS)\\.cxx$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/(HTTPClient|HTTPFileRequest|HTTPRepository|HTTPRequest|HTTPMemoryRequest|http_repo_sync|httpget)\\.cxx$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/SGDataDistributionService\\.cxx$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/package/.*\\.(c|cc|cpp|cxx)$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/scene/tsync/.*\\.(c|cc|cpp|cxx)$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/CanvasImage\\.cxx$")\n'
+    )
 for needle, replacement in filters.items():
     if replacement not in s:
         if needle not in s:
