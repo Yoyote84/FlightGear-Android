@@ -69,6 +69,13 @@ set(OSG_GL_CONTEXT_VERSION "")
 set(OPENGL_HEADER1 "#include <GLES2/gl2.h>")
 set(OPENGL_HEADER2 "")
 
+# The upstream OSG configure step also generates osg/Version from Version.in.
+# This Android build bypasses that configure step, so generate the header here.
+set(OPENSCENEGRAPH_MAJOR_VERSION 3)
+set(OPENSCENEGRAPH_MINOR_VERSION 7)
+set(OPENSCENEGRAPH_PATCH_VERSION 0)
+set(OPENSCENEGRAPH_SOVERSION 202)
+
 configure_file(
     "${FGOSG_ROOT}/src/osg/Config.in"
     "${FGOSG_GENERATED_INCLUDE_DIR}/osg/Config"
@@ -77,6 +84,11 @@ configure_file(
 configure_file(
     "${FGOSG_ROOT}/src/osg/GL.in"
     "${FGOSG_GENERATED_INCLUDE_DIR}/osg/GL"
+    @ONLY
+)
+configure_file(
+    "${FGOSG_ROOT}/src/osg/Version.in"
+    "${FGOSG_GENERATED_INCLUDE_DIR}/osg/Version"
     @ONLY
 )
 # OSG's GLES1 compatibility code is guarded by macro presence, not value.
