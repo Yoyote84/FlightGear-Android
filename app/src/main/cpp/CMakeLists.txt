@@ -39,20 +39,52 @@ configure_file(
     "${FLIGHTGEAR_GENERATED_DIR}/config.h"
 )
 
-# OpenSceneGraph normally generates osg/Config and OpenThreads/Config from
-# its CMake project. Reproduce those generated public headers in our native
-# build tree so FlightGear can consume the upstream OSG fork directly.
+# OpenSceneGraph normally generates osg/Config, osg/GL and OpenThreads/Config
+# from its CMake project. Reproduce those public headers for the Android GLES3
+# build so FlightGear can consume the upstream OSG fork directly.
 set(OSG_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/osg_generated")
 file(MAKE_DIRECTORY "${OSG_GENERATED_DIR}/osg")
 file(MAKE_DIRECTORY "${OSG_GENERATED_DIR}/OpenThreads")
+set(OSG_GL1_AVAILABLE 0)
+set(OSG_GL2_AVAILABLE 0)
+set(OSG_GL3_AVAILABLE 0)
+set(OSG_GLES1_AVAILABLE 0)
+set(OSG_GLES2_AVAILABLE 0)
+set(OSG_GLES3_AVAILABLE 1)
+set(OSG_GL1_FEATURES 0)
+set(OSG_GL2_FEATURES 0)
+set(OSG_GL3_FEATURES 0)
+set(OSG_GLES1_FEATURES 0)
+set(OSG_GLES2_FEATURES 0)
+set(OSG_GLES3_FEATURES 1)
+set(OSG_GL_DISPLAYLISTS_AVAILABLE 0)
+set(OSG_GL_MATRICES_AVAILABLE 0)
+set(OSG_GL_VERTEX_FUNCS_AVAILABLE 0)
+set(OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE 0)
+set(OSG_GL_FIXED_FUNCTION_AVAILABLE 0)
+set(OSG_CPP_EXCEPTIONS_AVAILABLE 0)
+set(OSG_GL_CONTEXT_VERSION "3.0")
+set(OSG_WINDOWING_SYSTEM "Android")
+set(OPENGL_HEADER1 "#include <GLES3/gl3.h>")
+set(OPENGL_HEADER2 "#include <GLES3/gl31.h>")
+set(GL_HEADER_HAS_GLINT64 1)
+set(GL_HEADER_HAS_GLUINT64 1)
 configure_file(
     "${FGOSG_ROOT}/src/osg/Config.in"
     "${OSG_GENERATED_DIR}/osg/Config"
 )
 configure_file(
+    "${FGOSG_ROOT}/src/osg/GL.in"
+    "${OSG_GENERATED_DIR}/osg/GL"
+)
+configure_file(
     "${FGOSG_ROOT}/src/OpenThreads/common/Config.in"
     "${OSG_GENERATED_DIR}/OpenThreads/Config"
 )
+
+# Boost is a header dependency of the FlightGear/SimGear sources. CI installs
+# the portable host headers and exposes them to the Android cross-compile.
+set(BOOST_INCLUDE_DIR "/usr/include")
 
 add_library(flightgear_android SHARED
     native_bridge.cpp
@@ -63,6 +95,8 @@ add_library(flightgear_source_probe OBJECT flightgear_source_probe.cpp)
 target_include_directories(flightgear_source_probe PRIVATE
     "${FLIGHTGEAR_GENERATED_DIR}"
     "${OSG_GENERATED_DIR}"
+    "${SIMGEAR_GENERATED_DIR}"
+    "${BOOST_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_source_probe PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
@@ -72,6 +106,8 @@ foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
     target_include_directories(${probe} PRIVATE
         "${FLIGHTGEAR_GENERATED_DIR}"
         "${OSG_GENERATED_DIR}"
+        "${SIMGEAR_GENERATED_PARENT}"
+        "${BOOST_INCLUDE_DIR}"
         "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
     target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
@@ -82,6 +118,8 @@ add_library(flightgear_main_objects OBJECT ${FLIGHTGEAR_MAIN_SOURCES})
 target_include_directories(flightgear_main_objects PRIVATE
     "${FLIGHTGEAR_GENERATED_DIR}"
     "${OSG_GENERATED_DIR}"
+    "${SIMGEAR_GENERATED_PARENT}"
+    "${BOOST_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
@@ -100,9 +138,11 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
 )
 
 # Gate 6: generate the configuration header expected by concrete SimGear
-# translation units. It lives in the build tree rather than being presented
-# as an upstream source replacement.
+# translation units. The generated file is build/simgear/simgear_config.h;
+# include its parent so <simgear/simgear_config.h> resolves exactly like the
+# upstream SimGear build.
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
+set(SIMGEAR_GENERATED_PARENT "${CMAKE_CURRENT_BINARY_DIR}")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file(
     "${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in"
@@ -110,11 +150,15 @@ configure_file(
     @ONLY
 )
 
+target_include_directories(simgear_atomic_objects PRIVATE
+    "${SIMGEAR_GENERATED_PARENT}"
+)
+
 add_library(simgear_source_location_objects OBJECT
     "${SIMGEAR_ROOT}/simgear/structure/SGSourceLocation.cxx"
 )
 target_include_directories(simgear_source_location_objects PRIVATE
-    "${SIMGEAR_GENERATED_DIR}"
+    "${SIMGEAR_GENERATED_PARENT}"
     "${SIMGEAR_ROOT}"
     "${SIMGEAR_ROOT}/simgear"
 )
@@ -127,6 +171,8 @@ target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIM
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_GENERATED_DIR}"
     "${OSG_GENERATED_DIR}"
+    "${SIMGEAR_GENERATED_PARENT}"
+    "${BOOST_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 
 # Gate 7: link the first real FlightGear Main object set into the Android
