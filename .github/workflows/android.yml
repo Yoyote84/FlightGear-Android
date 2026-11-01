@@ -42,6 +42,11 @@ jobs:
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
 
+      - name: Verify FlightGear engine is linked
+        run: |
+          chmod +x scripts/test-native-engine-symbol.sh
+          scripts/test-native-engine-symbol.sh app/build/intermediates/stripped_native_libs/debug/out/lib/arm64-v8a/libflightgear_android.so
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
