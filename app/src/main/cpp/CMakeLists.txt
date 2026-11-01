@@ -173,9 +173,17 @@ target_compile_definitions(FGOSGCore PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
     OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
+
+# Gate 18: assemble the complete native OSG renderer archive from the
+# independently validated OpenThreads/osg/osgDB/osgUtil/osgGA/osgText/osgViewer layers.
 add_library(FGOpenSceneGraph STATIC
     $<TARGET_OBJECTS:FGOpenThreads>
-    $<TARGET_OBJECTS:FGOSGCore>)
+    $<TARGET_OBJECTS:FGOSGCore>
+    $<TARGET_OBJECTS:FGOSGDB>
+    $<TARGET_OBJECTS:FGOSGUtil>
+    $<TARGET_OBJECTS:FGOSGGA>
+    $<TARGET_OBJECTS:FGOSGText>
+    $<TARGET_OBJECTS:FGOSGViewer>)
 target_include_directories(FGOpenSceneGraph PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOpenSceneGraph PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
 target_link_libraries(FGOpenSceneGraph PUBLIC android log EGL GLESv3)
@@ -245,4 +253,4 @@ target_compile_definitions(FGOSGViewer PRIVATE
 
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
-target_link_libraries(flightgear_android android log EGL GLESv3)
+target_link_libraries(flightgear_android android log EGL GLESv3 FGOpenSceneGraph)
