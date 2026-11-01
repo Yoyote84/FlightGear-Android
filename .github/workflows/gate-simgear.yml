@@ -1,0 +1,49 @@
+name: Gate - SimGear
+
+on:
+  workflow_call:
+
+jobs:
+  simgear:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore upstream sources
+        uses: actions/cache@v4
+        with:
+          path: third_party
+          key: fg-sources-${{ github.sha }}
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android toolchain
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - name: Prepare sources if cache is unavailable
+        run: |
+          if [ ! -d third_party/flightgear ]; then
+            chmod +x scripts/fetch-flightgear.sh
+            ./scripts/fetch-flightgear.sh
+          fi
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Configure CMake
+        run: gradle --no-daemon :app:generateJsonModelDebug
+      - name: Restore OSG native state
+        uses: actions/cache@v4
+        with:
+          path: app/.cxx
+          key: fg-native-osg-${{ github.sha }}
+      - name: Build SimGear gates
+        run: |
+          BUILD_DIR="$(find app/.cxx -type f -name build.ninja -print -quit | xargs -r dirname)"
+          test -n "$BUILD_DIR"
+          cmake --build "$BUILD_DIR" --target SimGearCore SimGearScene -- -j2
+      - name: Save SimGear native state
+        uses: actions/cache@v4
+        with:
+          path: app/.cxx
+          key: fg-native-simgear-${{ github.sha }}
