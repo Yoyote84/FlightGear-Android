@@ -168,6 +168,10 @@ target_compile_definitions(FGOpenThreads PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1)
 file(GLOB_RECURSE FGOSG_OSG_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osg/*.cpp"
     "${FGOSG_ROOT}/src/osg/*.cxx")
+# Matrix_implementation.cpp is a template-like implementation unit that is
+# intentionally included by Matrixd.cpp and Matrixf.cpp upstream; compiling
+# it directly leaves Matrix_implementation undefined.
+list(FILTER FGOSG_OSG_SOURCES EXCLUDE REGEX "/Matrix_implementation\\.cpp$")
 add_library(FGOSGCore OBJECT ${FGOSG_OSG_SOURCES})
 target_include_directories(FGOSGCore PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOSGCore PRIVATE
