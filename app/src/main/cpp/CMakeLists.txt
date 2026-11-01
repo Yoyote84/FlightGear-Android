@@ -160,6 +160,9 @@ file(GLOB_RECURSE FGOSG_OPENTHREADS_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/OpenThreads/*.cc"
     "${FGOSG_ROOT}/src/OpenThreads/*.cpp"
     "${FGOSG_ROOT}/src/OpenThreads/*.cxx")
+# OpenThreads contains a Windows backend beside the portable pthread backend.
+# Android must not compile the Win32 implementation (it requires windows.h).
+list(FILTER FGOSG_OPENTHREADS_SOURCES EXCLUDE REGEX "/OpenThreads/win32/")
 add_library(FGOpenThreads OBJECT ${FGOSG_OPENTHREADS_SOURCES})
 target_include_directories(FGOpenThreads PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOpenThreads PRIVATE ANDROID=1 OSG_LIBRARY_STATIC=1)
