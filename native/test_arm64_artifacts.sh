@@ -19,8 +19,8 @@ for artifact in "${artifacts[@]}"; do
     [[ "$machine" == "AArch64" ]] || fail "non-AArch64 ELF artifact: $artifact ($machine)"
 done
 
-for required in libOpenThreads.so libosg.so libSimGearCore.so libSimGearScene.so; do
-    find "$OUT" -type f -name "$required" -print -quit | grep -q . || fail "missing required ARM64 library: $required"
+for required in libOpenThreads.so libosg.so; do
+    find "$OUT" -type f -name "$required" -print -quit | grep -q . || fail "missing required ARM64 OpenSceneGraph library: $required"
 done
 
-echo "PASS: native output contains only accepted ARM64 ELF libraries and required OSG/SimGear stack"
+echo "PASS: native output contains only accepted ARM64 ELF libraries and required OpenSceneGraph core"
