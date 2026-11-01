@@ -79,6 +79,8 @@ configure_file(
     "${FGOSG_GENERATED_INCLUDE_DIR}/osg/GL"
     @ONLY
 )
+file(APPEND "${FGOSG_GENERATED_INCLUDE_DIR}/osg/GL"
+    "\n#undef OSG_GLES1_AVAILABLE\n#define OSG_GLES1_AVAILABLE 0\n")
 file(WRITE "${FGOSG_GENERATED_INCLUDE_DIR}/OpenThreads/Config"
     "#ifndef OPENTHREADS_CONFIG\n#define OPENTHREADS_CONFIG\n#define OT_LIBRARY_STATIC\n#endif\n")
 file(WRITE "${FGOSG_GENERATED_INCLUDE_DIR}/OpenThreads/Version"
