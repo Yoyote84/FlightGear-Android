@@ -208,8 +208,9 @@ static inline void glCallList(unsigned int) {}
 #endif
 EOF
 
-# The Android dummy sound subsystem in upstream FlightGear has an invalid
-# override placement; normalize it before compilation.
+# Android has no audio backend in this build. Fix the upstream dummy subsystem
+# declaration; the upstream file currently has the override specifier after
+# the function body, which is invalid C++.
 python3 - "$DEPS/flightgear/src/Sound/soundmanager.hxx" <<'PY'
 from pathlib import Path
 import sys
