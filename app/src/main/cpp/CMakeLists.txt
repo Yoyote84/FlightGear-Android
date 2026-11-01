@@ -34,6 +34,22 @@ set(FLIGHTGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/flightgear")
 file(MAKE_DIRECTORY "${FLIGHTGEAR_GENERATED_DIR}")
 configure_file("${FLIGHTGEAR_ROOT}/src/Include/config_cmake.h.in" "${FLIGHTGEAR_GENERATED_DIR}/config.h")
 
+# FlightGear's normal build generates this header from Git metadata at build
+# time. The Android build does not enter the upstream GenerateBuildInfo target,
+# so generate the same public header directly in the native build tree.
+execute_process(
+    COMMAND git -C "${FLIGHTGEAR_ROOT}" rev-parse HEAD
+    OUTPUT_VARIABLE FLIGHTGEAR_REVISION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+)
+if(NOT FLIGHTGEAR_REVISION)
+    set(FLIGHTGEAR_REVISION "unknown")
+endif()
+string(TIMESTAMP FLIGHTGEAR_BUILD_DATE "%Y-%m-%d %H:%M:%S UTC" UTC)
+file(WRITE "${FLIGHTGEAR_GENERATED_DIR}/flightgearBuildId.h"
+    "#pragma once\n#define BUILD_DATE \"${FLIGHTGEAR_BUILD_DATE}\"\n#define REVISION \"${FLIGHTGEAR_REVISION}\"\n")
+
 # Reproduce the public generated headers from the upstream OSG build.
 set(OSG_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/osg_generated")
 file(MAKE_DIRECTORY "${OSG_GENERATED_DIR}/osg")
