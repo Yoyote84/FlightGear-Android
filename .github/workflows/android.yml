@@ -3,7 +3,7 @@ name: Android ARM64 build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, native-flightgear-port, native-flightgear-port-simgear-core, native-flightgear-port-gate15-osgga, native-flightgear-port-gate16-osgtext, native-flightgear-port-gate17-osgviewer ]
+    branches: [ main, native-flightgear-port, native-flightgear-port-simgear-core, native-flightgear-port-gate15-osgga, native-flightgear-port-gate16-osgtext, native-flightgear-port-gate17-osgviewer, native-flightgear-port-gate18-osg-renderer ]
 
 jobs:
   build-debug:
