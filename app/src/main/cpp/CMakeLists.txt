@@ -172,15 +172,43 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-add_library(simgear_source_location_objects OBJECT
-    "${SIMGEAR_ROOT}/simgear/structure/SGSourceLocation.cxx"
+# Gate 7: compile the complete upstream SimGear structure component as
+# independent OBJECTs. This follows SimGear's own structure/CMakeLists.txt
+# source list instead of inventing replacement implementations.
+set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
+file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
+set(SIMGEAR_STRUCTURE_SOURCES
+    SGAtomic.cxx
+    SGBinding.cxx
+    SGExpression.cxx
+    SGSmplhist.cxx
+    SGSmplstat.cxx
+    SGPerfMon.cxx
+    SGSourceLocation.cxx
+    StringTable.cxx
+    commands.cxx
+    event_mgr.cxx
+    exception.cxx
+    subsystem_mgr.cxx
+    StateMachine.cxx
 )
-target_include_directories(simgear_source_location_objects PRIVATE
-    "${SIMGEAR_GENERATED_PARENT}"
+set(SIMGEAR_STRUCTURE_ABS_SOURCES)
+foreach(source IN LISTS SIMGEAR_STRUCTURE_SOURCES)
+    list(APPEND SIMGEAR_STRUCTURE_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/structure/${source}")
+endforeach()
+
+add_library(simgear_structure_objects OBJECT ${SIMGEAR_STRUCTURE_ABS_SOURCES})
+target_include_directories(simgear_structure_objects PRIVATE
+    "${SIMGEAR_GENERATED_DIR}"
     "${SIMGEAR_ROOT}"
     "${SIMGEAR_ROOT}/simgear"
 )
-target_compile_definitions(simgear_source_location_objects PRIVATE ANDROID=1 HAVE_CONFIG_H=1)
+target_compile_definitions(simgear_structure_objects PRIVATE
+    ANDROID=1
+    HAVE_CONFIG_H=1
+    SGATOMIC_USE_LIBRARY_FUNCTIONS=1
+    GCC_ATOMIC_BUILTINS_FOUND=1
+)
 
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
