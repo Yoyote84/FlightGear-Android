@@ -191,6 +191,27 @@ cat > "$DEPS/GL/glcorearb.h" <<'EOF'
 #ifndef GL_TEXTURE_COORD_ARRAY
 #define GL_TEXTURE_COORD_ARRAY 0x8078
 #endif
+#ifndef GL_UNSIGNED_INT_8_8_8_8
+#define GL_UNSIGNED_INT_8_8_8_8 0x8035
+#endif
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+#endif
+#ifndef GL_BGRA
+#define GL_BGRA 0x80E1
+#endif
+#ifndef GL_UNSIGNED_SHORT_1_5_5_5_REV
+#define GL_UNSIGNED_SHORT_1_5_5_5_REV 0x8366
+#endif
+#ifndef GL_UNSIGNED_SHORT_4_4_4_4_REV
+#define GL_UNSIGNED_SHORT_4_4_4_4_REV 0x8365
+#endif
+#ifndef GL_CLAMP_TO_BORDER
+#define GL_CLAMP_TO_BORDER 0x812D
+#endif
+#ifndef GL_TEXTURE_BORDER_COLOR
+#define GL_TEXTURE_BORDER_COLOR 0x1004
+#endif
 EOF
 python3 - "$OSG/include/osg/GL" <<'PY'
 from pathlib import Path
