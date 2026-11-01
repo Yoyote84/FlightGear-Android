@@ -7,8 +7,8 @@ STAMP="${SOURCE_STAMP:-$ROOT/native/build/source-stamp.txt}"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
 
-[[ -x "$ROOT/native/bootstrap/fetch_sources.sh" ]] || fail "missing executable fetch_sources.sh"
-[[ -x "$ROOT/native/bootstrap/apply_patches.sh" ]] || fail "missing executable apply_patches.sh"
+[[ -f "$ROOT/native/bootstrap/fetch_sources.sh" ]] || fail "missing fetch_sources.sh"
+[[ -f "$ROOT/native/bootstrap/apply_patches.sh" ]] || fail "missing apply_patches.sh"
 
 for project in flightgear simgear openscenegraph; do
     [[ -d "$SOURCE_ROOT/$project" ]] || fail "missing source tree: $SOURCE_ROOT/$project"
