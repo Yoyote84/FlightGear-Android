@@ -160,8 +160,6 @@ file(GLOB_RECURSE FGOSG_OPENTHREADS_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/OpenThreads/*.cc"
     "${FGOSG_ROOT}/src/OpenThreads/*.cpp"
     "${FGOSG_ROOT}/src/OpenThreads/*.cxx")
-# OpenThreads contains a Windows backend beside the portable pthread backend.
-# Android must not compile the Win32 implementation (it requires windows.h).
 list(FILTER FGOSG_OPENTHREADS_SOURCES EXCLUDE REGEX "/OpenThreads/win32/")
 add_library(FGOpenThreads OBJECT ${FGOSG_OPENTHREADS_SOURCES})
 target_include_directories(FGOpenThreads PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
@@ -174,11 +172,9 @@ add_library(FGOSGCore OBJECT ${FGOSG_OSG_SOURCES})
 target_include_directories(FGOSGCore PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src")
 target_compile_definitions(FGOSGCore PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 18: assemble the complete native OSG renderer archive from the
-# independently validated OpenThreads/osg/osgDB/osgUtil/osgGA/osgText/osgViewer layers.
 add_library(FGOpenSceneGraph STATIC
     $<TARGET_OBJECTS:FGOpenThreads>
     $<TARGET_OBJECTS:FGOSGCore>
@@ -191,7 +187,6 @@ target_include_directories(FGOpenSceneGraph PUBLIC "${FGOSG_INCLUDE_DIR}" "${FGO
 target_compile_definitions(FGOpenSceneGraph PUBLIC ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_WINDOWING_SYSTEM_NONE=1)
 target_link_libraries(FGOpenSceneGraph PUBLIC android log EGL GLESv3)
 
-# Gate 13: osgDB
 file(GLOB_RECURSE FGOSG_OSGDB_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osgDB/*.cpp"
     "${FGOSG_ROOT}/src/osgDB/*.cxx")
@@ -199,11 +194,9 @@ add_library(FGOSGDB OBJECT ${FGOSG_OSGDB_SOURCES})
 target_include_directories(FGOSGDB PRIVATE "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGDB PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 14: osgUtil. Keep it isolated so Android portability errors remain
-# visible before we assemble the renderer stack.
 file(GLOB_RECURSE FGOSG_OSGUTIL_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osgUtil/*.cpp"
     "${FGOSG_ROOT}/src/osgUtil/*.cxx")
@@ -212,11 +205,9 @@ target_include_directories(FGOSGUtil PRIVATE
     "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGUtil PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 15: osgGA. Compile the upstream GUI/event-adapter layer independently
-# before adding osgText/osgViewer and assembling the renderer stack.
 file(GLOB_RECURSE FGOSG_OSGGA_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osgGA/*.cpp"
     "${FGOSG_ROOT}/src/osgGA/*.cxx")
@@ -225,11 +216,9 @@ target_include_directories(FGOSGGA PRIVATE
     "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGGA PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 16: osgText. Compile the upstream text/font layer independently
-# before adding osgViewer and assembling the renderer stack.
 file(GLOB_RECURSE FGOSG_OSGTEXT_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osgText/*.cpp"
     "${FGOSG_ROOT}/src/osgText/*.cxx")
@@ -238,11 +227,9 @@ target_include_directories(FGOSGText PRIVATE
     "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGText PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
-# Gate 17: osgViewer. Compile the viewer/window-management layer independently
-# before assembling the complete renderer stack.
 file(GLOB_RECURSE FGOSG_OSGVIEWER_SOURCES CONFIGURE_DEPENDS
     "${FGOSG_ROOT}/src/osgViewer/*.cpp"
     "${FGOSG_ROOT}/src/osgViewer/*.cxx")
@@ -251,7 +238,7 @@ target_include_directories(FGOSGViewer PRIVATE
     "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGViewer PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
-    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
 
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
