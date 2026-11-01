@@ -79,8 +79,12 @@ configure_file(
     "${FGOSG_GENERATED_INCLUDE_DIR}/osg/GL"
     @ONLY
 )
+# OSG's GLES1 compatibility code is guarded by macro presence, not value.
+# Remove the generated feature macros completely for Android GLES2-only builds.
+file(APPEND "${FGOSG_GENERATED_INCLUDE_DIR}/osg/Config"
+    "\n#undef OSG_GLES1_AVAILABLE\n#undef OSG_GL1_AVAILABLE\n#undef OSG_GL_VERTEX_FUNCS_AVAILABLE\n#undef OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE\n#undef OSG_GL_FIXED_FUNCTION_AVAILABLE\n")
 file(APPEND "${FGOSG_GENERATED_INCLUDE_DIR}/osg/GL"
-    "\n#undef OSG_GLES1_AVAILABLE\n#define OSG_GLES1_AVAILABLE 0\n")
+    "\n#undef OSG_GLES1_AVAILABLE\n#undef OSG_GL1_AVAILABLE\n#undef OSG_GL_VERTEX_FUNCS_AVAILABLE\n#undef OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE\n#undef OSG_GL_FIXED_FUNCTION_AVAILABLE\n")
 file(WRITE "${FGOSG_GENERATED_INCLUDE_DIR}/OpenThreads/Config"
     "#ifndef OPENTHREADS_CONFIG\n#define OPENTHREADS_CONFIG\n#define OT_LIBRARY_STATIC\n#endif\n")
 file(WRITE "${FGOSG_GENERATED_INCLUDE_DIR}/OpenThreads/Version"
