@@ -1,5 +1,5 @@
 # Reproducible native source pins for the Android ARM64 convergence build.
-# checksum is the immutable Git object identifier used for source verification.
+# checksum is the immutable Git commit identifier used for source verification.
 
 [flightgear]
 repository = https://github.com/FlightGear/flightgear.git
@@ -16,5 +16,5 @@ checksum = sha1:6a57f165e6ab97865035d17dce00c81e06dc1981
 [openscenegraph]
 repository = https://github.com/openscenegraph/OpenSceneGraph.git
 ref = OpenSceneGraph-3.6.5
-revision = af2cd9b52653500022c157e4ee6304776d0cc866
-checksum = sha1:af2cd9b52653500022c157e4ee6304776d0cc866
+revision = a827840baf0786d72e11ac16d5338a4ee25779db
+checksum = sha1:a827840baf0786d72e11ac16d5338a4ee25779db
