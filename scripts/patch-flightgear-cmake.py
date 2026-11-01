@@ -24,6 +24,7 @@ for var in ("SIMGEAR_REMAINING_SOURCES", "SIMGEAR_CORE_SOURCES", "SIMGEAR_SCENE_
         + f'list(FILTER {var} EXCLUDE REGEX "/CanvasImage\\.cxx$")\n'
         + f'list(FILTER {var} EXCLUDE REGEX "/untar\\.cxx$")\n'
         + f'list(FILTER {var} EXCLUDE REGEX "/sha1\\.c$")\n'
+        + f'list(FILTER {var} EXCLUDE REGEX "/nasal-bin\\.c$")\n'
     )
 for needle, replacement in filters.items():
     if replacement not in s:
