@@ -75,4 +75,11 @@ target_compile_definitions(simgear_source_location_objects PRIVATE
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
-target_link_libraries(flightgear_android android log EGL GLESv3)
+
+# Gate 7: link the first real FlightGear Main object set into the Android
+# shared library so the APK contains engine code instead of only the JNI/EGL
+# bridge. Dependencies are resolved incrementally in subsequent gates.
+target_link_libraries(flightgear_android PRIVATE
+    flightgear_main_objects
+    android log EGL GLESv3
+)
