@@ -69,7 +69,7 @@ target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1 HAVE_CONF
 
 set(SIMGEAR_PROPS_SOURCES
     AtomicChangeListener.cxx condition.cxx easing_functions.cxx PropertyBasedElement.cxx
-    PropertyBasedMgr.cxx PropertyBasedMgr.cxx PropertyInterpolator.cxx
+    PropertyBasedMgr.cxx PropertyInterpolationMgr.cxx PropertyInterpolator.cxx
     propertyObject.cxx props.cxx props_io.cxx
 )
 set(SIMGEAR_PROPS_ABS_SOURCES)
