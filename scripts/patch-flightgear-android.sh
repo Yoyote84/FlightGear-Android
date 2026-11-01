@@ -75,7 +75,8 @@ if line not in s:
 p.write_text(s)
 PY
 
-# Enable OSG's intended implicit ref_ptr -> raw pointer output conversion.
+# Enable OSG's intended implicit ref_ptr -> raw pointer output conversion and
+# expose the version feature-test macro expected by current SimGear sources.
 python3 - "$OSG/include/osg/Config" <<'PY'
 from pathlib import Path
 import sys
@@ -83,6 +84,7 @@ p = Path(sys.argv[1])
 s = p.read_text()
 lines = [
     '#define OSG_USE_REF_PTR_IMPLICIT_OUTPUT_CONVERSION 1',
+    '#define OSG_MIN_VERSION_REQUIRED(MAJOR, MINOR, PATCH) 1',
     '#ifndef OSG_EXPORT',
     '#define OSG_EXPORT',
     '#endif',
