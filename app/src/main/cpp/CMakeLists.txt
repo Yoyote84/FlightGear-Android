@@ -69,7 +69,7 @@ target_compile_definitions(simgear_structure_objects PRIVATE ANDROID=1 HAVE_CONF
 
 set(SIMGEAR_PROPS_SOURCES
     AtomicChangeListener.cxx condition.cxx easing_functions.cxx PropertyBasedElement.cxx
-    PropertyBasedMgr.cxx PropertyInterpolationMgr.cxx PropertyInterpolator.cxx
+    PropertyBasedMgr.cxx PropertyBasedMgr.cxx PropertyInterpolator.cxx
     propertyObject.cxx props.cxx props_io.cxx
 )
 set(SIMGEAR_PROPS_ABS_SOURCES)
@@ -226,6 +226,19 @@ add_library(FGOSGText OBJECT ${FGOSG_OSGTEXT_SOURCES})
 target_include_directories(FGOSGText PRIVATE
     "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
 target_compile_definitions(FGOSGText PRIVATE
+    ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
+    OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
+    OSG_WINDOWING_SYSTEM_NONE=1)
+
+# Gate 17: osgViewer. Compile the viewer/window-management layer independently
+# before assembling the complete renderer stack.
+file(GLOB_RECURSE FGOSG_OSGVIEWER_SOURCES CONFIGURE_DEPENDS
+    "${FGOSG_ROOT}/src/osgViewer/*.cpp"
+    "${FGOSG_ROOT}/src/osgViewer/*.cxx")
+add_library(FGOSGViewer OBJECT ${FGOSG_OSGVIEWER_SOURCES})
+target_include_directories(FGOSGViewer PRIVATE
+    "${FGOSG_INCLUDE_DIR}" "${FGOSG_ROOT}/src" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear")
+target_compile_definitions(FGOSGViewer PRIVATE
     ANDROID=1 OSG_LIBRARY_STATIC=1 OSG_GL1_AVAILABLE=0 OSG_GL2_AVAILABLE=1
     OSG_GL3_AVAILABLE=1 OSG_GLES1_AVAILABLE=1 OSG_GLES2_AVAILABLE=1
     OSG_WINDOWING_SYSTEM_NONE=1)
