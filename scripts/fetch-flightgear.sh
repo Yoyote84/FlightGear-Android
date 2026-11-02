@@ -53,6 +53,11 @@ if [ ! -d "$BOOST_DIR/boost" ]; then
   rm -f "$tmp"
 fi
 
+# Make Boost visible from SimGear's include root for the Android NDK build.
+# simgear_structure_objects already includes ${SIMGEAR_ROOT}, so expose the
+# downloaded Boost tree as ${SIMGEAR_ROOT}/boost without changing CMake.
+ln -sfn "../boost/boost" "${DEPS}/simgear/boost"
+
 # The normal desktop build generates these headers from CMake/autoconf.
 # The Android build deliberately has no desktop configure pass, so provide
 # the small platform configuration headers required by the upstream sources.
