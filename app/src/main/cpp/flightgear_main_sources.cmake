@@ -33,6 +33,8 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${SIMGEAR_ROOT}/simgear/props/propertyObject.cxx"
     "${SIMGEAR_ROOT}/simgear/props/props.cxx"
     "${SIMGEAR_ROOT}/simgear/props/props_io.cxx"
+    "${SIMGEAR_ROOT}/simgear/math/interpolater.cxx"
+    "${SIMGEAR_ROOT}/simgear/threads/SGThread.cxx"
 
     "${SIMGEAR_ROOT}/simgear/debug/logstream.cxx"
     "${SIMGEAR_ROOT}/simgear/debug/BufferedLogCallback.cxx"
@@ -68,8 +70,12 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FLIGHTGEAR_ROOT}/src/Scripting/NasalSys.cxx"
     "${FLIGHTGEAR_ROOT}/src/GUI/gui_funcs.cxx"
 
-    # The OSG Group constructor is otherwise left undefined because this
-    # Android port currently compiles the FlightGear sources without the OSG
-    # library target.
+    # OSG core implementations needed by Group's transitive Node/Geometry/Notify
+    # dependencies. Keep these as upstream sources until the full OSG library
+    # target is integrated into the Android build graph.
     "${FGOSG_ROOT}/src/osg/Group.cpp"
+    "${FGOSG_ROOT}/src/osg/Node.cpp"
+    "${FGOSG_ROOT}/src/osg/Geometry.cpp"
+    "${FGOSG_ROOT}/src/osg/Notify.cpp"
+    "${FGOSG_ROOT}/src/osg/OccluderNode.cpp"
 )
