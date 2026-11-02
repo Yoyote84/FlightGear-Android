@@ -101,6 +101,10 @@ set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 set(SIMGEAR_GENERATED_PARENT "${CMAKE_CURRENT_BINARY_DIR}")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in" "${SIMGEAR_GENERATED_DIR}/simgear_config.h" @ONLY)
+# Generate simgear/version.h from the upstream template, matching the normal
+# SimGear build where CMake configure_file produces ${PROJECT_BINARY_DIR}/simgear/version.h.
+# The template is at ${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear/simgear/version.h.in
+configure_file("${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear/simgear/version.h.in" "${SIMGEAR_GENERATED_DIR}/version.h" @ONLY)
 
 # Stage the host's header-only Boost tree under a non-system include root.
 # CMake omits /usr/include from cross-compiler command lines as an implicit
