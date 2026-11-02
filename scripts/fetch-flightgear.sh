@@ -66,7 +66,7 @@ from pathlib import Path
 import sys
 p = Path(sys.argv[1])
 s = p.read_text()
-s = s.replace('#include <type_traits>\n', '#include <type_traits>\n#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_REMOVE_CVREF_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
+s = s.replace('#include <type_traits>\n', '#include <type_traits>\n#define HAVE_STD_REMOVE_CV_T 1\n#define HAVE_STD_ENABLE_IF_T 1\n#define HAVE_STD_BOOL_CONSTANT 1\n')
 p.write_text(s)
 PY
 
