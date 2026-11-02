@@ -225,5 +225,5 @@ target_include_directories(flightgear_android PRIVATE
 target_link_libraries(flightgear_android PRIVATE
     flightgear_main_objects
     flightgear_cjson
-    android log EGL GLESv3
+    simgear_structure_objects android log EGL GLESv3
 )
