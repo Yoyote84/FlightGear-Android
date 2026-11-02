@@ -35,6 +35,7 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${SIMGEAR_ROOT}/simgear/props/props_io.cxx"
     "${SIMGEAR_ROOT}/simgear/math/interpolater.cxx"
     "${SIMGEAR_ROOT}/simgear/threads/SGThread.cxx"
+    "${CMAKE_CURRENT_LIST_DIR}/simgear_strutils_android.cpp"
 
     "${SIMGEAR_ROOT}/simgear/debug/logstream.cxx"
     "${SIMGEAR_ROOT}/simgear/debug/BufferedLogCallback.cxx"
@@ -78,4 +79,12 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FGOSG_ROOT}/src/osg/Geometry.cpp"
     "${FGOSG_ROOT}/src/osg/Notify.cpp"
     "${FGOSG_ROOT}/src/osg/OccluderNode.cpp"
+    "${FGOSG_ROOT}/src/osg/Referenced.cpp"
+    "${FGOSG_ROOT}/src/osg/Object.cpp"
+    "${FGOSG_ROOT}/src/osg/Drawable.cpp"
+    "${FGOSG_ROOT}/src/osg/ApplicationUsage.cpp"
+    "${FGOSG_ROOT}/src/osg/CopyOp.cpp"
+    "${FGOSG_ROOT}/src/osg/StateAttribute.cpp"
+    "${FGOSG_ROOT}/src/osg/StateSet.cpp"
+    "${FGOSG_ROOT}/src/osg/VertexArrayState.cpp"
 )
