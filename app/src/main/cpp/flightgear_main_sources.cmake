@@ -48,6 +48,28 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${SIMGEAR_ROOT}/simgear/timing/timezone.cxx"
     "${SIMGEAR_ROOT}/simgear/timing/zonedetect.c"
 
-    # FGRenderer owns the event handler used by fg_os_common.cxx.
+    # SimGear misc/IO implementations required by FlightGear Main.
+    "${SIMGEAR_ROOT}/simgear/misc/sg_path.cxx"
+    "${SIMGEAR_ROOT}/simgear/io/iostreams/sgstream.cxx"
+    "${SIMGEAR_ROOT}/simgear/io/iostreams/gzfstream.cxx"
+    "${SIMGEAR_ROOT}/simgear/io/iostreams/gzcontainerfile.cxx"
+    "${SIMGEAR_ROOT}/simgear/io/iostreams/CharArrayStream.cxx"
+    "${SIMGEAR_ROOT}/simgear/io/iostreams/zlibstream.cxx"
+
+    # SimGear embedded-resource runtime.
+    "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResource.cxx"
+    "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResourceManager.cxx"
+    "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResourceProxy.cxx"
+
+    # FlightGear Viewer and scripting implementations referenced by Main.
     "${FLIGHTGEAR_ROOT}/src/Viewer/renderer.cxx"
+    "${FLIGHTGEAR_ROOT}/src/Viewer/view.cxx"
+    "${FLIGHTGEAR_ROOT}/src/Viewer/viewmgr.cxx"
+    "${FLIGHTGEAR_ROOT}/src/Scripting/NasalSys.cxx"
+    "${FLIGHTGEAR_ROOT}/src/GUI/gui_funcs.cxx"
+
+    # The OSG Group constructor is otherwise left undefined because this
+    # Android port currently compiles the FlightGear sources without the OSG
+    # library target.
+    "${FGOSG_ROOT}/src/osg/Group.cpp"
 )
