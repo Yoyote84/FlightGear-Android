@@ -16,3 +16,8 @@
 #define HAVE_STD_REMOVE_CV_T 1
 #define HAVE_STD_ENABLE_IF_T 1
 #define HAVE_STD_BOOL_CONSTANT 1
+
+/* Android bionic provides timegm() (since API 12), but the native Android
+ * configuration does not run SimGear's normal CMake feature detection.
+ */
+#define HAVE_TIMEGM 1
