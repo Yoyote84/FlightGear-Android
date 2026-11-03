@@ -222,5 +222,5 @@ target_link_libraries(flightgear_android PRIVATE
     flightgear_cjson
     simgear_structure_objects
     "${CURL_ANDROID_LIBRARY}"
-    android log EGL GLESv3
+    android log EGL GLESv3 z
 )
