@@ -74,6 +74,8 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FLIGHTGEAR_ROOT}/src/Viewer/viewmgr.cxx"
     "${FLIGHTGEAR_ROOT}/src/Scripting/NasalSys.cxx"
     "${FLIGHTGEAR_ROOT}/src/GUI/gui_funcs.cxx"
+    "${FGOSG_ROOT}/src/osg/GLObjects.cpp"
+    "${FGOSG_ROOT}/src/osg/Image.cpp"
     "${FGOSG_ROOT}/src/osg/Group.cpp"
     "${FGOSG_ROOT}/src/osg/Node.cpp"
     "${FGOSG_ROOT}/src/osg/Geometry.cpp"
