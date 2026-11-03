@@ -36,8 +36,12 @@ jobs:
 
       - name: Prepare original FlightGear sources
         run: |
-          chmod +x scripts/fetch-flightgear.sh
+          chmod +x scripts/fetch-flightgear.sh scripts/build-curl-android.sh
           ./scripts/fetch-flightgear.sh
+
+      - name: Build Android ARM64 libcurl
+        run: |
+          scripts/build-curl-android.sh
 
       - name: Install Gradle
         uses: gradle/actions/setup-gradle@v4
