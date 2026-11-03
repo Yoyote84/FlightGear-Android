@@ -9,6 +9,12 @@ set(FLIGHTGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/flightgea
 set(SIMGEAR_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear")
 set(FGOSG_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/openscenegraph")
 set(FLIGHTGEAR_CJSON_ROOT "${FLIGHTGEAR_ROOT}/3rdparty/cjson")
+set(CURL_ANDROID_ROOT "${CMAKE_CURRENT_LIST_DIR}/../../../../.android-deps/curl/prefix")
+set(CURL_ANDROID_INCLUDE_DIR "${CURL_ANDROID_ROOT}/include")
+set(CURL_ANDROID_LIBRARY "${CURL_ANDROID_ROOT}/lib/libcurl.a")
+if(NOT EXISTS "${CURL_ANDROID_LIBRARY}")
+    message(FATAL_ERROR "Android ARM64 libcurl not found at ${CURL_ANDROID_LIBRARY}; run scripts/build-curl-android.sh first.")
+endif()
 
 file(READ "${FLIGHTGEAR_ROOT}/flightgear-version" FLIGHTGEAR_VERSION)
 string(STRIP "${FLIGHTGEAR_VERSION}" FLIGHTGEAR_VERSION)
@@ -34,9 +40,6 @@ set(FLIGHTGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/flightgear")
 file(MAKE_DIRECTORY "${FLIGHTGEAR_GENERATED_DIR}")
 configure_file("${FLIGHTGEAR_ROOT}/src/Include/config_cmake.h.in" "${FLIGHTGEAR_GENERATED_DIR}/config.h")
 
-# FlightGear's normal build generates this header from Git metadata at build
-# time. The Android build does not enter the upstream GenerateBuildInfo target,
-# so generate the same public header directly in the native build tree.
 execute_process(
     COMMAND git -C "${FLIGHTGEAR_ROOT}" rev-parse HEAD
     OUTPUT_VARIABLE FLIGHTGEAR_REVISION
@@ -53,7 +56,6 @@ configure_file(
     @ONLY
 )
 
-# Reproduce the public generated headers from the upstream OSG build.
 set(OSG_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/osg_generated")
 file(MAKE_DIRECTORY "${OSG_GENERATED_DIR}/osg")
 file(MAKE_DIRECTORY "${OSG_GENERATED_DIR}/OpenThreads")
@@ -76,7 +78,6 @@ set(OSG_GL_VERTEX_ARRAY_FUNCS_AVAILABLE 0)
 set(OSG_GL_FIXED_FUNCTION_AVAILABLE 0)
 set(OSG_CPP_EXCEPTIONS_AVAILABLE 0)
 set(OSG_GL_CONTEXT_VERSION "3.0")
-# Match the FlightGear OSG fork's CMake defaults for Android.
 set(OSG_WINDOWING_SYSTEM "None")
 set(OSG_WINDOWING_SYSTEM_NONE 1)
 set(OSG_USE_REF_PTR_IMPLICIT_OUTPUT_CONVERSION 1)
@@ -96,19 +97,12 @@ configure_file("${FGOSG_ROOT}/src/osg/GL.in" "${OSG_GENERATED_DIR}/osg/GL")
 configure_file("${FGOSG_ROOT}/src/osg/Version.in" "${OSG_GENERATED_DIR}/osg/Version")
 configure_file("${FGOSG_ROOT}/src/OpenThreads/common/Config.in" "${OSG_GENERATED_DIR}/OpenThreads/Config")
 
-# SimGear requires <simgear/simgear_config.h>, matching its normal install layout.
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 set(SIMGEAR_GENERATED_PARENT "${CMAKE_CURRENT_BINARY_DIR}")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 configure_file("${CMAKE_CURRENT_LIST_DIR}/simgear_android_config.h.in" "${SIMGEAR_GENERATED_DIR}/simgear_config.h" @ONLY)
-# Generate simgear/version.h from the upstream template, matching the normal
-# SimGear build where CMake configure_file produces ${PROJECT_BINARY_DIR}/simgear/version.h.
-# The template is at ${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear/simgear/version.h.in
 configure_file("${CMAKE_CURRENT_LIST_DIR}/../../../../third_party/simgear/simgear/version.h.in" "${SIMGEAR_GENERATED_DIR}/version.h" @ONLY)
 
-# Stage the host's header-only Boost tree under a non-system include root.
-# CMake omits /usr/include from cross-compiler command lines as an implicit
-# system path, but the Android NDK sysroot does not contain the host Boost tree.
 set(BOOST_SOURCE_DIR "/usr/include/boost")
 set(BOOST_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost_include")
 if(NOT IS_DIRECTORY "${BOOST_SOURCE_DIR}")
@@ -127,7 +121,6 @@ add_library(flightgear_android SHARED
     android_egl_surface.cpp
 )
 
-# FlightGear's Main sources include cJSON.h and require cJSON symbols at link time.
 add_library(flightgear_cjson OBJECT "${FLIGHTGEAR_CJSON_ROOT}/cJSON.c")
 target_include_directories(flightgear_cjson PRIVATE "${FLIGHTGEAR_CJSON_ROOT}")
 
@@ -137,6 +130,7 @@ target_include_directories(flightgear_source_probe PRIVATE
     "${OSG_GENERATED_DIR}"
     "${SIMGEAR_GENERATED_PARENT}"
     "${BOOST_INCLUDE_DIR}"
+    "${CURL_ANDROID_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${FLIGHTGEAR_CJSON_ROOT}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_source_probe PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
@@ -148,6 +142,7 @@ foreach(probe flightgear_main_probe flightgear_bootstrap_probe)
         "${OSG_GENERATED_DIR}"
         "${SIMGEAR_GENERATED_PARENT}"
         "${BOOST_INCLUDE_DIR}"
+        "${CURL_ANDROID_INCLUDE_DIR}"
         "${FLIGHTGEAR_ROOT}/src" "${FLIGHTGEAR_CJSON_ROOT}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
     target_compile_definitions(${probe} PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 endforeach()
@@ -160,6 +155,7 @@ target_include_directories(flightgear_main_objects PRIVATE
     "${SIMGEAR_GENERATED_PARENT}"
     "${SIMGEAR_GENERATED_DIR}"
     "${BOOST_INCLUDE_DIR}"
+    "${CURL_ANDROID_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${FLIGHTGEAR_CJSON_ROOT}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 target_compile_definitions(flightgear_main_objects PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 
@@ -177,9 +173,6 @@ target_compile_definitions(simgear_atomic_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
-# Gate 7: compile the complete upstream SimGear structure component as
-# independent OBJECTs. This follows SimGear's own structure/CMakeLists.txt
-# source list instead of inventing replacement implementations.
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 file(MAKE_DIRECTORY "${SIMGEAR_GENERATED_DIR}")
 set(SIMGEAR_STRUCTURE_SOURCES
@@ -221,10 +214,13 @@ target_include_directories(flightgear_android PRIVATE
     "${OSG_GENERATED_DIR}"
     "${SIMGEAR_GENERATED_PARENT}"
     "${BOOST_INCLUDE_DIR}"
+    "${CURL_ANDROID_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${FLIGHTGEAR_CJSON_ROOT}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 
 target_link_libraries(flightgear_android PRIVATE
     flightgear_main_objects
     flightgear_cjson
-    simgear_structure_objects android log EGL GLESv3
+    simgear_structure_objects
+    "${CURL_ANDROID_LIBRARY}"
+    android log EGL GLESv3
 )
