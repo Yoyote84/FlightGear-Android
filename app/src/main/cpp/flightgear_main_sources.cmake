@@ -32,7 +32,6 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${SIMGEAR_ROOT}/simgear/math/interpolater.cxx"
     "${SIMGEAR_ROOT}/simgear/math/sg_random.cxx"
     "${SIMGEAR_ROOT}/simgear/threads/SGThread.cxx"
-    "${CMAKE_CURRENT_LIST_DIR}/simgear_strutils_android.cpp"
 
     # Real SimGear HTTP implementation.
     "${SIMGEAR_ROOT}/simgear/io/HTTPClient.cxx"
