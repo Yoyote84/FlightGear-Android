@@ -96,6 +96,11 @@ configure_file("${FGOSG_ROOT}/src/osg/Config.in" "${OSG_GENERATED_DIR}/osg/Confi
 configure_file("${FGOSG_ROOT}/src/osg/GL.in" "${OSG_GENERATED_DIR}/osg/GL")
 configure_file("${FGOSG_ROOT}/src/osg/Version.in" "${OSG_GENERATED_DIR}/osg/Version")
 configure_file("${FGOSG_ROOT}/src/OpenThreads/common/Config.in" "${OSG_GENERATED_DIR}/OpenThreads/Config")
+set(OPENTHREADS_MAJOR_VERSION 3)
+set(OPENTHREADS_MINOR_VERSION 3)
+set(OPENTHREADS_PATCH_VERSION 1)
+set(OPENTHREADS_SOVERSION 21)
+configure_file("${FGOSG_ROOT}/src/OpenThreads/common/Version.in" "${OSG_GENERATED_DIR}/OpenThreads/Version")
 
 set(SIMGEAR_GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/simgear")
 set(SIMGEAR_GENERATED_PARENT "${CMAKE_CURRENT_BINARY_DIR}")
