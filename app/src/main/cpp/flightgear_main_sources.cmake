@@ -89,4 +89,5 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FGOSG_ROOT}/src/osg/StateAttribute.cpp"
     "${FGOSG_ROOT}/src/osg/StateSet.cpp"
     "${FGOSG_ROOT}/src/osg/VertexArrayState.cpp"
+    "${FGOSG_ROOT}/src/osg/Uniform.cpp"
 )
