@@ -69,6 +69,7 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResource.cxx"
     "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResourceManager.cxx"
     "${SIMGEAR_ROOT}/simgear/embedded_resources/EmbeddedResourceProxy.cxx"
+    "${SIMGEAR_ROOT}/simgear/scene/sky/sky.cxx"
 
     # Real FlightGear implementations for the linker failures from the previous CI gate.
     "${FLIGHTGEAR_ROOT}/src/Aircraft/replay.cxx"
