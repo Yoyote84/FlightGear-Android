@@ -18,6 +18,7 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FLIGHTGEAR_ROOT}/src/Main/util.cxx"
     "${FLIGHTGEAR_ROOT}/src/Main/XLIFFParser.cxx"
     "${FLIGHTGEAR_ROOT}/src/Main/ErrorReporter.cxx"
+    "${FLIGHTGEAR_ROOT}/src/FDM/flightProperties.cxx"
 
     "${SIMGEAR_ROOT}/simgear/props/AtomicChangeListener.cxx"
     "${SIMGEAR_ROOT}/simgear/props/condition.cxx"
