@@ -40,6 +40,22 @@ elif new not in text:
     raise SystemExit("Unexpected FlightGear soundmanager.hxx: Android compatibility patch did not match")
 PY
 
+# Keep Boost-dependent templates self-contained. Recent Boost releases no longer
+# expose boost::mpl::if_c as an incidental include of iterator_facade.
+python3 - "$DEPS/simgear/simgear/nasal/cppbind/NasalHash.hxx" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+anchor = '#include <boost/iterator/iterator_facade.hpp>\\n'
+include = '#include <boost/mpl/if.hpp>\\n'
+if include not in text:
+    if anchor not in text:
+        raise SystemExit("Unexpected SimGear NasalHash.hxx: iterator_facade include not found")
+    path.write_text(text.replace(anchor, anchor + include, 1), encoding="utf-8")
+PY
+
 # Boost is used as a header dependency by the native FlightGear/SimGear sources.
 # Only headers are needed at this stage, so do not build Boost libraries.
 BOOST_VERSION="1.89.0"
