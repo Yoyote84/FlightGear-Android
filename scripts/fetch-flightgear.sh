@@ -9,7 +9,7 @@ clone_or_update() {
   local url="$1"
   local dir="$2"
   local ref="$3"
-  if [ -d "$DEPS/$dir/.git" ]; then
+  if [ -e "$DEPS/$dir/.git" ]; then
     git -C "$DEPS/$dir" fetch --depth=1 origin "$ref"
     git -C "$DEPS/$dir" checkout -q FETCH_HEAD
   else
