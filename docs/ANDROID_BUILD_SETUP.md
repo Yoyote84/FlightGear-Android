@@ -26,7 +26,8 @@ build target yet.
 
 | Tool | Pinned version |
 |---|---|
-| Java | 17 |
+| Java runtime | 17 |
+| Java source / bytecode compatibility | 17 |
 | Android Gradle Plugin | 9.5.0 |
 | Gradle | 9.6.0 |
 | Android NDK | 30.0.16248370 (r30 LTS) |
@@ -34,9 +35,9 @@ build target yet.
 | Android SDK platform | 36 |
 | Android Build Tools | 36.0.0 |
 
-The NDK r30 toolchain produces 16 KB-aligned native libraries by default.
-The project also passes explicit ELF linker alignment options and checks the
-produced native libraries with `scripts/test-16kb-page-size.sh`.
+Java source and bytecode compatibility are explicitly pinned to Java 17 to match the CI JDK and the Android Gradle Plugin requirement. The NDK r30 toolchain produces 16 KB-aligned native libraries by default. The project also passes explicit ELF linker alignment options and checks the produced native libraries with `scripts/test-16kb-page-size.sh`.
+
+The CI workflow verifies that the exact SDK platform, Build Tools, NDK revision, CMake binary, and compiler are installed before configuring the Android Gradle project. It runs `:app:help` as a separate configuration check, so Gradle/AGP configuration failures are distinguishable from native compilation and linking failures.
 
 ## Native dependencies
 
@@ -83,9 +84,10 @@ surface but does not yet start FlightGear's simulator subsystems or execute the
 simulation/render loop. A successful native library link alone is therefore
 not proof of a working simulator.
 
-The last inspected build (run 44972117775, 22 Nov 2026) got through SDK setup,
-FlightGear source preparation, libcurl, and Gradle configuration. Its C++
-compile stopped in SimGear because `boost::mpl::if_c` was not explicitly
-included by `NasalHash.hxx`. The fetch script now applies that compatibility
-fix. The engine link and on-device rendering still require subsequent
-integration and runtime testing.
+The latest inspected build (run 44973487217, 22 Nov 2026) passed JDK setup,
+Android SDK package installation, FlightGear source preparation, libcurl
+compilation, and Gradle installation. C++ compilation completed and the final
+native link was reached; it then failed on unresolved implementation symbols
+from OpenSceneGraph, FlightGear GUI/viewer code, and Nasal. No APK artifact was
+produced. This is a Step 3 native source/link integration blocker, not an
+Android SDK, NDK, CMake, or Gradle toolchain setup failure.
