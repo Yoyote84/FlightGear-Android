@@ -72,6 +72,11 @@ jobs:
           chmod +x scripts/fetch-flightgear.sh scripts/build-curl-android.sh
           ./scripts/fetch-flightgear.sh
 
+      - name: Verify native source coverage
+        run: |
+          chmod +x scripts/test-native-source-coverage.sh
+          scripts/test-native-source-coverage.sh
+
       - name: Build Android ARM64 libcurl
         run: |
           export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/30.0.16248370"
