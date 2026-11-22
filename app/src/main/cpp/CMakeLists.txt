@@ -223,6 +223,13 @@ target_include_directories(flightgear_android PRIVATE
     "${CURL_ANDROID_INCLUDE_DIR}"
     "${FLIGHTGEAR_ROOT}/src" "${FLIGHTGEAR_CJSON_ROOT}" "${SIMGEAR_ROOT}" "${SIMGEAR_ROOT}/simgear" "${FGOSG_ROOT}/include")
 
+# Explicitly preserve 16 KB ELF segment alignment for Android devices using
+# 16 KB memory pages. NDK r30 also defaults to 16 KB alignment.
+target_link_options(flightgear_android PRIVATE
+    "-Wl,-z,max-page-size=16384"
+    "-Wl,-z,common-page-size=16384"
+)
+
 target_link_libraries(flightgear_android PRIVATE
     flightgear_main_objects
     flightgear_cjson
