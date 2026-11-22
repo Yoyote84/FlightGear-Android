@@ -10,15 +10,17 @@ the `native-flightgear-port` branch.
 | Device target | Samsung Galaxy Z Flip6 |
 | CPU ABI | `arm64-v8a` |
 | Minimum Android API | 26 |
-| Compile / target API | 37 (Android 17) |
+| Compile / target API | 36 (Android 16 stable) |
 | Graphics API | OpenGL ES 3.0 via EGL |
 | Native language standard | C++17 |
 | Display mode | immersive full-screen, landscape-first, resizable |
 
-The app targets API 37 and declares the game category because FlightGear is a
-flight simulator. The unfolded display must still tolerate size and orientation
-changes: the activity handles surface lifecycle events and the native renderer
-must update its viewport whenever the Surface dimensions change.
+The app targets API 36 (the stable SDK platform available to this build) and
+declares the game category because FlightGear is a flight simulator. This
+keeps landscape-first behavior for a game while still handling surface changes
+when the Z Flip6 is folded or unfolded. Android 17 / API 37 remains a preview
+SDK in the current Android SDK distribution, so it is not used as the release
+build target yet.
 
 ## Build toolchain
 
@@ -49,7 +51,7 @@ pinned Android NDK. CMake expects the result under
 
 ## Build sequence
 
-Run from the repository root with JDK 17, Android SDK platform 37, Android NDK
+Run from the repository root with JDK 17, Android SDK platform 36, Android NDK
 30.0.16248370, CMake 3.22.1, and Gradle 9.6.0 available:
 
 ```bash
