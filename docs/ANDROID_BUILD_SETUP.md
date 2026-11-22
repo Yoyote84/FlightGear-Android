@@ -31,7 +31,7 @@ build target yet.
 | Gradle | 9.6.0 |
 | Android NDK | 30.0.16248370 (r30 LTS) |
 | CMake | 3.22.1 |
-| Android SDK platform | 37 |
+| Android SDK platform | 36 |
 | Android Build Tools | 36.0.0 |
 
 The NDK r30 toolchain produces 16 KB-aligned native libraries by default.
@@ -40,8 +40,9 @@ produced native libraries with `scripts/test-16kb-page-size.sh`.
 
 ## Native dependencies
 
-`scripts/fetch-flightgear.sh` retrieves FlightGear, SimGear, the FlightGear
-OpenSceneGraph fork, and Boost 1.89.0 headers. It applies targeted compatibility
+`scripts/fetch-flightgear.sh` initializes the FlightGear, SimGear, and FlightGear
+OpenSceneGraph submodules at the exact commits pinned in this repository, then
+prepares their Android compatibility worktrees and downloads Boost 1.89.0 headers. It applies targeted compatibility
 adjustments to the fetched worktrees, including the explicit Boost.MPL include
 needed by SimGear's Nasal hash wrapper.
 
