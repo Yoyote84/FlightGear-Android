@@ -5,6 +5,9 @@ on:
   push:
     branches: [ main, native-flightgear-port ]
 
+permissions:
+  contents: read
+
 concurrency:
   group: android-arm64-build-${{ github.ref }}
   cancel-in-progress: true
@@ -12,6 +15,7 @@ concurrency:
 jobs:
   build-debug:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - name: Checkout
         uses: actions/checkout@v7
