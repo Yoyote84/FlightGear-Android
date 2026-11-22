@@ -1,41 +1,56 @@
 # Android build setup
 
-This document records the Android toolchain and native prerequisites used by
+This document records the toolchain, device assumptions, and native checks for
 the `native-flightgear-port` branch.
 
-## Target configuration
+## Device and platform target
 
 | Item | Configuration |
 |---|---|
 | Device target | Samsung Galaxy Z Flip6 |
-| Android ABI | `arm64-v8a` only |
+| CPU ABI | `arm64-v8a` |
 | Minimum Android API | 26 |
-| Compile / target API | 36 |
-| Android Gradle Plugin | 8.13.2 |
-| Gradle | 8.13 (CI) |
-| Java | 17 |
-| Android NDK | 27.2.12479018 |
-| CMake | 3.22.1 |
-| Native language standard | C++17 |
+| Compile / target API | 37 (Android 17) |
 | Graphics API | OpenGL ES 3.0 via EGL |
+| Native language standard | C++17 |
+| Display mode | immersive full-screen, landscape-first, resizable |
 
-The manifest, EGL context, and OpenSceneGraph configuration must agree on
-OpenGL ES 3.0. Do not lower one layer to ES 2.0 without changing and testing
-the complete native graphics configuration.
+The app targets API 37 and declares the game category because FlightGear is a
+flight simulator. The unfolded display must still tolerate size and orientation
+changes: the activity handles surface lifecycle events and the native renderer
+must update its viewport whenever the Surface dimensions change.
+
+## Build toolchain
+
+| Tool | Pinned version |
+|---|---|
+| Java | 17 |
+| Android Gradle Plugin | 9.5.0 |
+| Gradle | 9.6.0 |
+| Android NDK | 30.0.16248370 (r30 LTS) |
+| CMake | 3.22.1 |
+| Android SDK platform | 37 |
+| Android Build Tools | 36.0.0 |
+
+The NDK r30 toolchain produces 16 KB-aligned native libraries by default.
+The project also passes explicit ELF linker alignment options and checks the
+produced native libraries with `scripts/test-16kb-page-size.sh`.
 
 ## Native dependencies
 
 `scripts/fetch-flightgear.sh` retrieves FlightGear, SimGear, the FlightGear
-OpenSceneGraph fork, and Boost headers. The script also applies the documented
-Android compatibility adjustments to the fetched worktrees.
+OpenSceneGraph fork, and Boost 1.89.0 headers. It applies targeted compatibility
+adjustments to the fetched worktrees, including the explicit Boost.MPL include
+needed by SimGear's Nasal hash wrapper.
 
-`scripts/build-curl-android.sh` builds static ARM64 libcurl 8.17.0 with the
-Android NDK. CMake expects the result under `.android-deps/curl/prefix`.
+`scripts/build-curl-android.sh` builds static ARM64 libcurl 8.17.0 using the
+pinned Android NDK. CMake expects the result under
+`.android-deps/curl/prefix`.
 
 ## Build sequence
 
-Run from the repository root in an environment with JDK 17, Android SDK,
-Android NDK 27.2.12479018, CMake 3.22.1, and Gradle 8.13 available:
+Run from the repository root with JDK 17, Android SDK platform 37, Android NDK
+30.0.16248370, CMake 3.22.1, and Gradle 9.6.0 available:
 
 ```bash
 chmod +x scripts/fetch-flightgear.sh scripts/build-curl-android.sh
@@ -44,26 +59,30 @@ chmod +x scripts/fetch-flightgear.sh scripts/build-curl-android.sh
 gradle --no-daemon :app:assembleDebug
 ```
 
-After the APK has been built, verify that the native library contains the
-FlightGear engine entry point:
+After compilation, verify the native FlightGear symbol and 16 KB ELF alignment:
 
 ```bash
-chmod +x scripts/test-native-engine-symbol.sh
+chmod +x scripts/test-native-engine-symbol.sh scripts/test-16kb-page-size.sh
 scripts/test-native-engine-symbol.sh \
   app/build/intermediates/stripped_native_libs/debug/out/lib/arm64-v8a/libflightgear_android.so
+scripts/test-16kb-page-size.sh \
+  app/build/intermediates/stripped_native_libs/debug/out/lib/arm64-v8a
 ```
 
 The GitHub Actions workflow `.github/workflows/android.yml` performs the same
-sequence and publishes the debug APK only after the native symbol check passes.
+sequence and publishes the debug APK only after both native checks pass.
 
-## Current boundary
+## Current implementation boundary
 
-This setup stage prepares the Android shell, ABI, graphics context, toolchain,
-and dependency acquisition. It does not mean the FlightGear engine is already
-fully linked or running.
+The Android shell, JNI bridge, surface management, EGL setup, ARM64 toolchain,
+and dependency acquisition are present. The current bridge manages the graphics
+surface but does not yet start FlightGear's simulator subsystems or execute the
+simulation/render loop. A successful native library link alone is therefore
+not proof of a working simulator.
 
-The last inspected CI run before these setup changes (run 41998892874, 5 Nov
-2026) reached the native link step and failed on unresolved FlightGear and
-OpenSceneGraph symbols. Those engine-link errors belong to the next native
-integration/build stage and must be cleared before an APK can be considered
-usable.
+The last inspected build (run 44972117775, 22 Nov 2026) got through SDK setup,
+FlightGear source preparation, libcurl, and Gradle configuration. Its C++
+compile stopped in SimGear because `boost::mpl::if_c` was not explicitly
+included by `NasalHash.hxx`. The fetch script now applies that compatibility
+fix. The engine link and on-device rendering still require subsequent
+integration and runtime testing.
