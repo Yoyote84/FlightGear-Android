@@ -125,6 +125,7 @@ endif()
 add_library(flightgear_android SHARED
     native_bridge.cpp
     android_egl_surface.cpp
+    android_screen_dump.cpp
 )
 
 add_library(flightgear_cjson OBJECT "${FLIGHTGEAR_CJSON_ROOT}/cJSON.c")
@@ -214,6 +215,51 @@ target_compile_definitions(simgear_structure_objects PRIVATE
     GCC_ATOMIC_BUILTINS_FOUND=1
 )
 
+
+# Compile the real SimGear Nasal interpreter. NasalSys calls this C API directly;
+# linking only the C++ wrapper sources leaves naNewContext/naNewString/hash symbols
+# unresolved, so every source from SimGear's upstream nasal component is included.
+set(SIMGEAR_NASAL_SOURCES
+    bitslib.c
+    code.c
+    codegen.c
+    gc.c
+    hash.c
+    iolib.c
+    lex.c
+    lib.c
+    mathlib.c
+    misc.c
+    parse.c
+    string.c
+    thread-posix.c
+    thread-win32.c
+    threadlib.c
+    utf8lib.c
+    vector.c
+    unixlib.c
+    NasalEmesaryInterface.cxx
+)
+set(SIMGEAR_NASAL_ABS_SOURCES)
+foreach(source IN LISTS SIMGEAR_NASAL_SOURCES)
+    list(APPEND SIMGEAR_NASAL_ABS_SOURCES "${SIMGEAR_ROOT}/simgear/nasal/${source}")
+endforeach()
+
+add_library(simgear_nasal_objects OBJECT ${SIMGEAR_NASAL_ABS_SOURCES})
+target_include_directories(simgear_nasal_objects PRIVATE
+    "${SIMGEAR_GENERATED_PARENT}"
+    "${SIMGEAR_GENERATED_DIR}"
+    "${BOOST_INCLUDE_DIR}"
+    "${SIMGEAR_ROOT}"
+    "${SIMGEAR_ROOT}/simgear"
+    "${SIMGEAR_ROOT}/simgear/nasal"
+)
+target_compile_definitions(simgear_nasal_objects PRIVATE ANDROID=1)
+set_target_properties(simgear_nasal_objects PROPERTIES
+    C_STANDARD 99
+    C_STANDARD_REQUIRED ON
+)
+
 target_compile_definitions(flightgear_android PRIVATE FG_ANDROID=1 ANDROID=1 SIMGEAR_USE_OPENGL=1)
 target_include_directories(flightgear_android PRIVATE
     "${FLIGHTGEAR_GENERATED_DIR}"
@@ -234,6 +280,7 @@ target_link_libraries(flightgear_android PRIVATE
     flightgear_main_objects
     flightgear_cjson
     simgear_structure_objects
+    simgear_nasal_objects
     "${CURL_ANDROID_LIBRARY}"
     android log EGL GLESv3 z
 )

@@ -55,9 +55,18 @@ done
 for item in \
   bitslib.c code.c codegen.c gc.c hash.c iolib.c lex.c lib.c \
   mathlib.c misc.c parse.c string.c thread-posix.c threadlib.c \
-  utf8lib.c vector.c unixlib.c NasalEmesaryInterface.cxx; do
+  utf8lib.c vector.c unixlib.c thread-win32.c NasalEmesaryInterface.cxx; do
   require_nasal_source "$item"
 done
+
+if ! grep -Fq "android_screen_dump.cpp" "$CMAKE"; then
+  echo "Android GLES screen-dump implementation is not added to CMake" >&2
+  failures=$((failures + 1))
+fi
+if [[ ! -f "$ROOT/app/src/main/cpp/android_screen_dump.cpp" ]]; then
+  echo "Android GLES screen-dump implementation file is missing" >&2
+  failures=$((failures + 1))
+fi
 
 if ! grep -Fq "add_library(simgear_nasal_objects OBJECT" "$CMAKE"; then
   echo "Nasal object target is missing from CMake" >&2
