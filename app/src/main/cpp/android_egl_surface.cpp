@@ -1,6 +1,7 @@
 #include <android/native_window.h>
 #include <android/log.h>
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #define LOG_TAG "FlightGearAndroid"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -13,6 +14,18 @@ EGLSurface g_surface = EGL_NO_SURFACE;
 EGLContext g_context = EGL_NO_CONTEXT;
 }
 
+static void destroyEgl() {
+    if (g_display != EGL_NO_DISPLAY) {
+        eglMakeCurrent(g_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+        if (g_surface != EGL_NO_SURFACE) eglDestroySurface(g_display, g_surface);
+        if (g_context != EGL_NO_CONTEXT) eglDestroyContext(g_display, g_context);
+        eglTerminate(g_display);
+    }
+    g_display = EGL_NO_DISPLAY;
+    g_surface = EGL_NO_SURFACE;
+    g_context = EGL_NO_CONTEXT;
+}
+
 static bool createEglSurface(ANativeWindow* window) {
     if (!window) return false;
 
@@ -23,7 +36,7 @@ static bool createEglSurface(ANativeWindow* window) {
     if (!eglInitialize(g_display, &major, &minor)) return false;
 
     const EGLint configAttribs[] = {
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+        EGL_RENDERABLE_TYPE, EGL_OPENGL_ES3_BIT_KHR,
         EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
         EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8,
         EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE, 8,
@@ -36,7 +49,10 @@ static bool createEglSurface(ANativeWindow* window) {
     if (!eglChooseConfig(g_display, configAttribs, &config, 1, &count) || count == 0)
         return false;
 
-    const EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE };
+    const EGLint contextAttribs[] = {
+        EGL_CONTEXT_CLIENT_VERSION, 3,
+        EGL_NONE
+    };
     g_context = eglCreateContext(g_display, config, EGL_NO_CONTEXT, contextAttribs);
     if (g_context == EGL_NO_CONTEXT) return false;
 
@@ -45,21 +61,9 @@ static bool createEglSurface(ANativeWindow* window) {
 
     if (!eglMakeCurrent(g_display, g_surface, g_surface, g_context)) return false;
 
-    LOGI("Android EGL initialized: %dx%d, GLES 2 context",
+    LOGI("Android EGL initialized: %dx%d, GLES 3 context",
          ANativeWindow_getWidth(window), ANativeWindow_getHeight(window));
     return true;
-}
-
-static void destroyEgl() {
-    if (g_display != EGL_NO_DISPLAY) {
-        eglMakeCurrent(g_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        if (g_surface != EGL_NO_SURFACE) eglDestroySurface(g_display, g_surface);
-        if (g_context != EGL_NO_CONTEXT) eglDestroyContext(g_display, g_context);
-        eglTerminate(g_display);
-    }
-    g_display = EGL_NO_DISPLAY;
-    g_surface = EGL_NO_SURFACE;
-    g_context = EGL_NO_CONTEXT;
 }
 
 extern "C" void fg_android_surface_created(ANativeWindow* window) {
@@ -75,7 +79,8 @@ extern "C" void fg_android_surface_created(ANativeWindow* window) {
     }
 
     if (!createEglSurface(g_window)) {
-        LOGE("Failed to create Android EGL surface");
+        LOGE("Failed to create Android EGL/GLES 3 surface");
+        destroyEgl();
     }
 }
 
