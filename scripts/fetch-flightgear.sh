@@ -48,8 +48,8 @@ import sys
 
 path = Path(sys.argv[1])
 text = path.read_text(encoding="utf-8")
-anchor = '#include <boost/iterator/iterator_facade.hpp>\\n'
-include = '#include <boost/mpl/if.hpp>\\n'
+anchor = '#include <boost/iterator/iterator_facade.hpp>\n'
+include = '#include <boost/mpl/if.hpp>\n'
 if include not in text:
     if anchor not in text:
         raise SystemExit("Unexpected SimGear NasalHash.hxx: iterator_facade include not found")
