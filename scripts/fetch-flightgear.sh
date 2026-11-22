@@ -5,22 +5,20 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 DEPS="$ROOT/third_party"
 mkdir -p "$DEPS"
 
-clone_or_update() {
-  local url="$1"
-  local dir="$2"
-  local ref="$3"
-  if [ -e "$DEPS/$dir/.git" ]; then
-    git -C "$DEPS/$dir" fetch --depth=1 origin "$ref"
-    git -C "$DEPS/$dir" checkout -q FETCH_HEAD
-  else
-    git clone --depth=1 --branch "$ref" "$url" "$DEPS/$dir"
+ensure_submodule() {
+  local path="$1"
+  git -C "$ROOT" submodule update --init --depth 1 -- "$path"
+  if ! git -C "$ROOT/$path" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    echo "Required source submodule is unavailable: $path" >&2
+    exit 1
   fi
 }
 
-# FlightGear's actively maintained mirrors.
-clone_or_update "https://github.com/FlightGear/simgear.git" "simgear" "next"
-clone_or_update "https://github.com/FlightGear/flightgear.git" "flightgear" "next"
-clone_or_update "https://gitlab.com/flightgear/openscenegraph.git" "openscenegraph" "next"
+# Use the exact upstream commits recorded as gitlinks in this repository.
+# Do not follow moving upstream branches during a release build.
+ensure_submodule "third_party/flightgear"
+ensure_submodule "third_party/simgear"
+ensure_submodule "third_party/openscenegraph"
 
 # The current FlightGear 'next' branch contains a small syntax error in the
 # Android-reachable dummy audio subsystem: the C++11 override specifier is
