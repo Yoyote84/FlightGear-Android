@@ -1,0 +1,9 @@
+[submodule "third_party/flightgear"]
+	path = third_party/flightgear
+	url = https://github.com/FlightGear/flightgear.git
+[submodule "third_party/simgear"]
+	path = third_party/simgear
+	url = https://github.com/FlightGear/simgear.git
+[submodule "third_party/openscenegraph"]
+	path = third_party/openscenegraph
+	url = https://gitlab.com/flightgear/openscenegraph.git
