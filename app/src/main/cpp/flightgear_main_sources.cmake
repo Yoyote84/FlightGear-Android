@@ -115,7 +115,6 @@ set(FLIGHTGEAR_MAIN_SOURCES
     "${FLIGHTGEAR_ROOT}/src/Viewer/WindowBuilder.cxx"
     "${FLIGHTGEAR_ROOT}/src/Viewer/WindowSystemAdapter.cxx"
     "${FLIGHTGEAR_ROOT}/src/Viewer/fg_os_osgviewer.cxx"
-    "${FLIGHTGEAR_ROOT}/src/Viewer/fgviewer.cxx"
     "${FLIGHTGEAR_ROOT}/src/Viewer/ViewPropertyEvaluator.cxx"
     "${FLIGHTGEAR_ROOT}/src/Viewer/renderer.cxx"
     "${FLIGHTGEAR_ROOT}/src/Viewer/splash.cxx"

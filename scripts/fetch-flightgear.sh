@@ -38,22 +38,6 @@ elif new not in text:
     raise SystemExit("Unexpected FlightGear soundmanager.hxx: Android compatibility patch did not match")
 PY
 
-# OSG's Android configuration opts into its ref_ptr-returning ReadFile API.
-# Update FlightGear's standalone viewer call to use the matching owning pointer type.
-python3 - "$DEPS/flightgear/src/Viewer/fgviewer.cxx" <<'PY'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-old = "loadedModel = osgDB::readNodeFiles(dataFiles, options);"
-new = "loadedModel = osgDB::readRefNodeFiles(dataFiles, options);"
-if old in text:
-    path.write_text(text.replace(old, new, 1), encoding="utf-8")
-elif new not in text:
-    raise SystemExit("Unexpected FlightGear fgviewer.cxx: OSG ref_ptr API compatibility patch did not match")
-PY
-
 # Keep Boost-dependent templates self-contained. Recent Boost releases no longer
 # expose boost::mpl::if_c as an incidental include of iterator_facade.
 python3 - "$DEPS/simgear/simgear/nasal/cppbind/NasalHash.hxx" <<'PY'
