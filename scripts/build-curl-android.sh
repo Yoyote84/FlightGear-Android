@@ -15,7 +15,13 @@ if [ ! -d "$SRC" ]; then
   tar -xJf "$ARCHIVE" -C "$BUILD_ROOT"
 fi
 
-NDK="${ANDROID_NDK_HOME:-${ANDROID_HOME}/ndk/27.2.12479018}"
+ANDROID_NDK_VERSION="${ANDROID_NDK_VERSION:-30.0.16248370}"
+ANDROID_SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+if [[ -z "$ANDROID_SDK_ROOT" && -z "${ANDROID_NDK_HOME:-}" ]]; then
+  echo "Set ANDROID_HOME, ANDROID_SDK_ROOT, or ANDROID_NDK_HOME before building." >&2
+  exit 1
+fi
+NDK="${ANDROID_NDK_HOME:-$ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION}"
 TOOLCHAIN="$NDK/build/cmake/android.toolchain.cmake"
 if [ ! -f "$TOOLCHAIN" ]; then
   echo "Android NDK toolchain not found: $TOOLCHAIN" >&2
