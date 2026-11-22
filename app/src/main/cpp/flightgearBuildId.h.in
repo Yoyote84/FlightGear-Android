@@ -1,0 +1,3 @@
+#pragma once
+#define BUILD_DATE "@FLIGHTGEAR_BUILD_DATE@"
+#define REVISION "@FLIGHTGEAR_REVISION@"

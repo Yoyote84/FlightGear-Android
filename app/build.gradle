@@ -3,6 +3,7 @@ plugins { id 'com.android.application' }
 android {
     namespace 'org.flightgear.android'
     compileSdk 36
+    ndkVersion "30.0.16248370"
 
     defaultConfig {
         applicationId 'org.flightgear.android'
@@ -16,6 +17,9 @@ android {
     }
 
     externalNativeBuild {
-        cmake { path file('src/main/cpp/CMakeLists.txt') }
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+            version "3.22.1"
+        }
     }
 }
