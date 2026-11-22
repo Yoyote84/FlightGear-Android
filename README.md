@@ -6,7 +6,7 @@ devices.
 ## Primary device target
 
 - Samsung Galaxy Z Flip6
-- Android 17 / API 37 target
+- Android 16 / API 36 target (stable)
 - `arm64-v8a` native ABI
 - OpenGL ES 3.0 graphics through EGL
 - Landscape-first full-screen flight-simulator interface
