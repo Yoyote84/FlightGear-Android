@@ -68,6 +68,11 @@ if [[ ! -f "$ROOT/app/src/main/cpp/android_screen_dump.cpp" ]]; then
   failures=$((failures + 1))
 fi
 
+if ! grep -Fq "readRefNodeFiles(dataFiles, options)" "$ROOT/scripts/fetch-flightgear.sh"; then
+  echo "FlightGear OSG ref_ptr API compatibility patch is missing" >&2
+  failures=$((failures + 1))
+fi
+
 if ! grep -Fq "add_library(simgear_nasal_objects OBJECT" "$CMAKE"; then
   echo "Nasal object target is missing from CMake" >&2
   failures=$((failures + 1))
